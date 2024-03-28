@@ -121,6 +121,13 @@ int cshift(Idx& ip, const Idx i, const int mu)  {
 }
 
 
+
+struct Corr{
+}
+
+
+
+
 struct Spin {
   Idx N;
   std::vector<int> s;
@@ -155,7 +162,6 @@ struct Spin {
   int ss( const Idx x, const Idx y, const int mu ) const {
     Idx xp, yp;
     const int sign = cshift(xp, yp, x, y, mu);
-    // if(sign!=1) assert(false);
     return sign * (*this)(x,y) * (*this)(xp,yp);
   }
 
@@ -170,9 +176,44 @@ struct Spin {
         counter++;
       }
     }
-
     return tot/counter;
   }
+
+
+  double ss_corr( const Idx dx, const Idx dy ) const {
+    assert(0<=dx && dx<Lx);
+    assert(0<=dy && dy<Ly);
+
+    double res = 0.0;
+
+    for(Idx x=0; x<Lx; x++){
+      for(Idx y=0; y<Ly; y++){
+        if( !is_site(x,y) ) continue;
+
+        int sign = 1;
+        if( x+dx>=Lx && nu>=3 ) sign *= -1;
+        if( y+dy>=Ly && nu/2==1 ) sign *= -1;
+
+        res += sign * (*this)(x,y) * (*this)(x+dx,y+dy);
+      }}
+
+    return res;
+  }
+
+
+  void ss_corr( std::vector<double>& corr ) const {
+    // void ss_corr( Corr& corr ) const {
+    assert( corr.size()==N );
+
+#ifdef _OPENMP
+#pragma omp parallel for num_threads(nparallel)
+#endif
+    for(Idx dx=0; dx<Lx; dx++){
+      for(Idx dy=0; dy<Ly; dy++){
+        corr[idx(dx,dy)] = ss_corr( dx, dy );
+      }}
+  }
+
 
   std::string print() const {
     std::stringstream ss;
@@ -242,13 +283,14 @@ void wolff( Spin& s ){
 }
 
 
+template<typename T>
 struct Obs {
   bool is_initialized = false;
   std::string description;
   int N;
-  std::function<double(const Spin&)> f;
+  std::function<T(const Spin&)> f;
 
-  std::vector<double> v;
+  T sum;
   int counter;
 
   Obs(){}
@@ -257,13 +299,13 @@ struct Obs {
   (
    const std::string& description_,
    const int N_,
-   const std::function<double(const Spin&)>& f_
+   const std::function<T(const Spin&)>& f_
    )
     : is_initialized(true)
     , description(description_)
     , N(N_)
     , f(f_)
-    , v(N)
+    , sum(0.0)
     , counter(0)
   {}
 
@@ -271,36 +313,31 @@ struct Obs {
   (
    const std::string description_,
    const int N_,
-   const std::function<double(const Spin&)>& f_
+   const std::function<T(const Spin&)>& f_
    ){
     is_initialized = true;
     description = description_;
     N = N_;
     f = f_;
-    v.resize(N);
+    sum = 0.0;
     counter = 0;
   }
 
   void clear(){
     assert(is_initialized);
-    v.clear();
-    v.resize(N);
+    sum = 0.0;
     counter = 0;
   }
 
   void meas( const Spin& s ) {
     assert(is_initialized);
-    v[counter] = f(s);
+    sum += f(s);
     counter++;
   }
 
   double mean() const {
     assert( is_initialized );
     assert( counter==N );
-
-    double sum = 0.0;
-    for(int i=0; i<N; i++) sum += v[i];
-
     return sum/N;
   }
 
@@ -308,7 +345,7 @@ struct Obs {
 
 
 
-void write( Obs& obs, const std::string& dir, const int label ){
+void write( Obs<double>& obs, const std::string& dir, const int label ){
   const std::string filename = dir + obs.description + "_" + std::to_string(label) + ".dat";
   std::ofstream of( filename, std::ios::out | std::ios::trunc );
   if(!of) assert(false);

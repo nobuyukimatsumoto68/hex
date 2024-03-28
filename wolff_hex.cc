@@ -14,11 +14,11 @@ int main( int argc, char *argv[] ){
   omp_set_num_threads( nparallel );
 #endif
 
-  Lx = 3;
-  Ly = 3;
-  // Lx = 6 * 16;
-  // Ly = 6 * 32;
-  nu = 4; // PP, PA, AA, AP
+  // Lx = 3;
+  // Ly = 3;
+  Lx = 6 * 16;
+  Ly = 6 * 32;
+  nu = 1; // PP, PA, AA, AP
   K = 2.0/3.0 * std::cos(M_PI/6.0);
 
   //
@@ -31,7 +31,7 @@ int main( int argc, char *argv[] ){
   // routine
   const int Nheatbath = 2;
   const int Nwolff = 4;
-  const int Nrepeat = 50;
+  const int Nrepeat = 10;
   //
 
   const int seed = 1;
@@ -42,9 +42,11 @@ int main( int argc, char *argv[] ){
   s.random();
 
 
-  Obs ssA( "ssA", binsize, [](const Spin& s0){ return s0.ss_even(0); } );
-  Obs ssB( "ssB", binsize, [](const Spin& s0){ return s0.ss_even(1); } );
-  Obs ssC( "ssC", binsize, [](const Spin& s0){ return s0.ss_even(2); } );
+  Obs<double> ssA( "ssA", binsize, [](const Spin& s0){ return s0.ss_even(0); } );
+  Obs<double> ssB( "ssB", binsize, [](const Spin& s0){ return s0.ss_even(1); } );
+  Obs<double> ssC( "ssC", binsize, [](const Spin& s0){ return s0.ss_even(2); } );
+
+  // std::vector<Obs> ss_corr( "ssC", binsize, [](const Spin& s0){ return s0.ss_even(2); } );
 
 
   // run
