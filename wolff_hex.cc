@@ -17,21 +17,19 @@ int main( int argc, char *argv[] ){
 
   Lx = 6 * 16;
   Ly = 6 * 32;
-  nu = 1; // PP, PA, AA, AP
 
-  if (argc>1) nu = atoi(argv[1]);
-  if (argc>2) Lx = atoi(argv[2]);
-  if (argc>3) Ly = atoi(argv[3]);
-  if (argc>4) nparallel = atoi(argv[4]);
+  // if (argc>1) nu = atoi(argv[1]);
+  if (argc>1) Lx = atoi(argv[2]);
+  if (argc>2) Ly = atoi(argv[3]);
+  if (argc>3) nparallel = atoi(argv[4]);
 
-  beta = 0.5 * std::log(2.0 + std::sqrt(3.0));
   const std::string description = "Lx"+std::to_string(Lx)+"Ly"+std::to_string(Ly)+"nu"+std::to_string(nu);
   const std::filesystem::path datadir = "./data_"+description+"/";
   std::filesystem::create_directories( datadir );
 
   //
-  const int Nbin = 22;
-  const int binsize = 100;
+  const int Nbin = 42;
+  const int binsize = 1e3;
   //
   const int Nconf = Nbin*binsize;
   int ninit = 0;

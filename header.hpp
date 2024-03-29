@@ -19,9 +19,12 @@ constexpr int SIX = 6;
 
 Idx Lx = 3;
 Idx Ly = 3;
-int nu = 1;
-double beta = 1.0;
 int nparallel = 8;
+
+
+constexpr int nu = 1; // PP, PA, AA, AP
+constexpr double beta = 0.5 * std::log(2.0 + std::sqrt(3.0));
+
 
 
 std::mt19937 gen;
@@ -292,6 +295,18 @@ void wolff( Spin& s ){
       stack_idx.push(q);
     }
   }
+}
+
+
+void change_BC_x( Spin& s ){
+
+  const Idx x=0;
+
+  double Eorig = 0.0;
+  for(Idx y=0; y<Ly; y++){
+    s(x,y);
+  }
+
 }
 
 
