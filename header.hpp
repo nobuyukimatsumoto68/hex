@@ -20,7 +20,7 @@ constexpr int SIX = 6;
 Idx Lx = 3;
 Idx Ly = 3;
 int nu = 1;
-double K = 1.0;
+double beta = 1.0;
 int nparallel = 8;
 
 
@@ -33,6 +33,10 @@ double dist01(){ return d01D(gen); }
 Idx dist0N(){ return d0N(gen); }
 int distpm1(){ return 2*d01I(gen)-1; }
 
+
+// ---------------
+// GLOBAL FUNCTIONS
+// ---------------
 
 Idx mod(const Idx a, const int b){ return (b +(a%b))%b; }
 
@@ -122,10 +126,9 @@ int cshift(Idx& ip, const Idx i, const int mu)  {
 
 
 
-struct Corr{
-}
-
-
+// ----------------
+// CLASS DEFINITIONS
+// ----------------
 
 
 struct Spin {
@@ -137,6 +140,8 @@ struct Spin {
 
   int& operator[](const Idx i) { return s[i]; }
   int operator[](const Idx i) const { return s[i]; }
+
+  Spin() = delete;
 
   Spin( const int N_ )
     : N(N_)
@@ -166,7 +171,7 @@ struct Spin {
   }
 
   double ss_even( const int mu ) const {
-    double tot = 0;
+    double tot = 0.0;
     Idx counter = 0;
 
     for(Idx x=0; x<Lx; x++){
@@ -185,33 +190,40 @@ struct Spin {
     assert(0<=dy && dy<Ly);
 
     double res = 0.0;
+    int counter = 0;
 
     for(Idx x=0; x<Lx; x++){
       for(Idx y=0; y<Ly; y++){
         if( !is_site(x,y) ) continue;
+        const Idx xp = mod(x+dx,Lx);
+        const Idx yp = mod(y+dy,Ly);
+        if( !is_site(xp,yp) ) continue;
 
         int sign = 1;
         if( x+dx>=Lx && nu>=3 ) sign *= -1;
         if( y+dy>=Ly && nu/2==1 ) sign *= -1;
-
-        res += sign * (*this)(x,y) * (*this)(x+dx,y+dy);
+        res += sign * (*this)(x,y) * (*this)(xp,yp);
+        counter++;
       }}
+
+    res /= counter;
 
     return res;
   }
 
 
-  void ss_corr( std::vector<double>& corr ) const {
-    // void ss_corr( Corr& corr ) const {
-    assert( corr.size()==N );
+  std::vector<double> ss_corr() const {
+    std::vector<double> corr(N, 0.0);
 
 #ifdef _OPENMP
-#pragma omp parallel for num_threads(nparallel)
+#pragma omp parallel for collapse(2) num_threads(nparallel)
 #endif
     for(Idx dx=0; dx<Lx; dx++){
       for(Idx dy=0; dy<Ly; dy++){
         corr[idx(dx,dy)] = ss_corr( dx, dy );
       }}
+
+    return corr;
   }
 
 
@@ -243,7 +255,7 @@ void heatbath( Spin& s ){
       senv += sign * s[j];
     }
 
-    const double p = std::exp(2.0*K*senv);
+    const double p = std::exp(2.0*beta*senv);
     const double r = dist01();
     if( r<p/(1.0+p) ) s[i] = 1;
     else s[i] = -1;
@@ -274,7 +286,7 @@ void wolff( Spin& s ){
       if( sign_q*s[q] == s[p] || is_cluster[q] ) continue; // s[x]*sR[y]<0 or y in c
 
       const double r = dist01();
-      if( r < exp(-2.0 * K) ) continue; // reject
+      if( r < exp(-2.0 * beta) ) continue; // reject
 
       is_cluster[q] = true;
       stack_idx.push(q);
@@ -283,7 +295,107 @@ void wolff( Spin& s ){
 }
 
 
-template<typename T>
+
+struct Scalar {
+  double v;
+
+  Scalar()
+    : v(0.0)
+  {}
+
+  Scalar( const double v_ )
+    : v(v_)
+  {}
+
+  Scalar( const Scalar& other )
+    : v(other.v)
+  {}
+
+  void clear(){ v = 0.0; }
+
+  Scalar& operator+=(const Scalar& rhs){
+    v += rhs.v;
+    return *this;
+  }
+
+  Scalar& operator+=(const double& rhs){
+    v += rhs;
+    return *this;
+  }
+
+  Scalar& operator/=(const double& rhs){
+    v /= rhs;
+    return *this;
+  }
+
+  std::string print() const {
+    std::stringstream ss;
+    ss << std::scientific << std::setprecision(15);
+    ss << v;
+    return ss.str();
+  }
+
+};
+
+
+
+struct Corr {
+  std::vector<double> v;
+
+  Corr()
+    : v(Lx*Ly, 0.0)
+  {}
+
+  Corr( const std::vector<double> v_ )
+    : v(v_)
+  {}
+
+  Corr( const Corr& other )
+    : v(other.v)
+  {}
+
+  double& operator()(const Idx x, const Idx y) { return v[idx(x,y)]; }
+  double operator()(const Idx x, const Idx y) const { return v[idx(x,y)]; }
+
+  void clear(){ for(Idx i=0; i<Lx*Ly; i++) v[i] = 0.0; }
+
+  Corr& operator+=(const Corr& rhs)
+  {
+    assert( rhs.v.size()==Lx*Ly );
+    for(Idx i=0; i<Lx*Ly; i++) v[i] += rhs.v[i];
+    return *this;
+  }
+
+  Corr& operator+=(const std::vector<double>& rhs)
+  {
+    assert( rhs.size()==Lx*Ly );
+    for(Idx i=0; i<Lx*Ly; i++) v[i] += rhs[i];
+    return *this;
+  }
+
+  Corr& operator/=(const double& rhs)
+  {
+    for(Idx i=0; i<Lx*Ly; i++) v[i] /= rhs;
+    return *this;
+  }
+
+  std::string print() const {
+    std::stringstream ss;
+    ss << std::scientific << std::setprecision(15);
+    for(int y=0; y<Ly; y++){
+      for(int x=0; x<Lx; x++) {
+        ss << (*this)(x, y) << " ";
+      }
+      ss << std::endl;
+    }
+    return ss.str();
+  }
+
+};
+
+
+
+template<typename T> // T needs to have: .clear, +=, /= defined
 struct Obs {
   bool is_initialized = false;
   std::string description;
@@ -293,7 +405,7 @@ struct Obs {
   T sum;
   int counter;
 
-  Obs(){}
+  Obs() = delete;
 
   Obs
   (
@@ -305,105 +417,38 @@ struct Obs {
     , description(description_)
     , N(N_)
     , f(f_)
-    , sum(0.0)
+    , sum()
     , counter(0)
   {}
 
-  void init
-  (
-   const std::string description_,
-   const int N_,
-   const std::function<T(const Spin&)>& f_
-   ){
-    is_initialized = true;
-    description = description_;
-    N = N_;
-    f = f_;
-    sum = 0.0;
-    counter = 0;
-  }
-
   void clear(){
-    assert(is_initialized);
-    sum = 0.0;
+    sum.clear();
     counter = 0;
   }
 
   void meas( const Spin& s ) {
-    assert(is_initialized);
     sum += f(s);
     counter++;
   }
 
-  double mean() const {
-    assert( is_initialized );
-    assert( counter==N );
-    return sum/N;
+  T mean() const {
+    T mean( sum );
+    mean /= counter;
+    return mean;
+  }
+
+  void write_and_clear( const std::string& dir, const int label ){
+    const std::string filename = dir + description + "_" + std::to_string(label) + ".dat";
+    std::ofstream of( filename, std::ios::out | std::ios::trunc );
+    if(!of) assert(false);
+
+    of << std::scientific << std::setprecision(15);
+    of << mean().print();
+
+    clear();
   }
 
 };
 
 
 
-void write( Obs<double>& obs, const std::string& dir, const int label ){
-  const std::string filename = dir + obs.description + "_" + std::to_string(label) + ".dat";
-  std::ofstream of( filename, std::ios::out | std::ios::trunc );
-  if(!of) assert(false);
-
-  of << std::scientific << std::setprecision(15);
-  of << obs.mean();
-
-  obs.clear();
-}
-
-
-
-
-
-
-// int cshift_minus(Idx& xp, Idx& yp, const Idx x, const Idx y, const int mu)  {
-//   int res = 1;
-
-//   if(mu==0){
-//     xp=mod(x+1,Lx);
-//     yp=y;
-//     if(x==Lx-1 && nu>=3) res *= -1;
-//   }
-//   else if(mu==1){
-//     xp=mod(x-1,Lx);
-//     yp=mod(y+1,Ly);
-//     if(x==0 && nu>=3) res *= -1;
-//     if(y==Ly-1 && nu/2==1) res *= -1;
-//   }
-//   else if(mu==2){
-//     xp=x;
-//     yp=mod(y-1,Ly);
-//     if(y==0 && nu/2==1) res *= -1;
-//   }
-//   else if(mu==3){
-//     xp=mod(x-1,Lx);
-//     yp=y;
-//     if(x==0 && nu>=3) res *= -1;
-//   }
-//   else if(mu==4){
-//     xp=mod(x+1,Lx);
-//     yp=mod(y-1,Ly);
-//     if(x==Lx-1 && nu>=3) res *= -1;
-//     if(y==0 && nu/2==1) res *= -1;
-//   }
-//   else if(mu==5){
-//     xp=x;
-//     yp=mod(y+1,Ly);
-//     if(y==Ly-1 && nu/2==1) res *= -1;
-//   }
-//   else assert(false);
-//   return res;
-// }
-
-// int cshift_minus(Idx& ip, const Idx i, const int mu)  {
-//   Idx x, y, xp, yp;
-//   get_xy(x, y, i);
-//   const int res = cshift_minus(xp, yp, x, y, mu);
-//   ip = idx(xp,yp);
-//   return res;
-// }
