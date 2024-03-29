@@ -24,7 +24,7 @@ double beta = 1.0;
 int nparallel = 8;
 
 
-std::mt19937 gen; // mersenne_twister_engine seeded with rd()
+std::mt19937 gen;
 std::uniform_real_distribution<double> d01D(0.0, 1.0); // (1, 6);
 std::uniform_int_distribution<int> d01I(0, 1); // (1, 6);
 std::uniform_int_distribution<Idx> d0N(0, Lx*Ly); // (1, 6);
