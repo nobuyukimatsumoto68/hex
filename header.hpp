@@ -20,19 +20,26 @@ constexpr int THREE = 3;
 constexpr int SIX = 6;
 
 
-constexpr Idx Lx = 6*8;
-constexpr Idx Ly = 2*Lx;
-constexpr int nparallel = 8;
+constexpr Idx Lx = 3; // 12
+constexpr Idx Ly = 3;
+// constexpr Idx Lx = 6*12; // 12
+// constexpr Idx Ly = 2*Lx;
+constexpr int nparallel = 10;
 
 
 constexpr int nu = 1; // PP, PA, AA, AP
 constexpr double beta = 0.5 * std::log(2.0 + std::sqrt(3.0));
+//
+constexpr double kappa = 2.0/3.0;
+constexpr double cos6 = std::cos(M_PI/6.0);
+constexpr double B = cos6 / (1.0 - kappa*kappa * cos6 * cos6);
+//
+// constexpr double alat = 1.0/Lx;
+// constexpr double xipsi = std::sqrt( 1.5*std::sqrt(3.0)*alat / (2.0*M_PI) );
 
 
 
 
-
-// std::array<std::mt19937, Lx*Ly> gen;
 std::mt19937 gen;
 std::uniform_real_distribution<double> d01D(0.0, 1.0); // (1, 6);
 std::uniform_int_distribution<int> d01I(0, 1); // (1, 6);
@@ -41,10 +48,6 @@ void set_gen( const int seed ) {
   std::mt19937 gen0( seed );
   gen.seed( gen0() );
 }
-// void set_gen( const int seed ) {
-//   std::mt19937 gen0( seed );
-//   for(Idx i=0; i<Lx*Ly; i++) gen[i].seed( gen0() );
-// }
 double dist01(){ return d01D(gen); }
 Idx dist0N(){ return d0N(gen); }
 int distpm1(){ return 2*d01I(gen)-1; }
@@ -94,7 +97,6 @@ bool is_link(const Idx i, const int mu)  {
 
 
 void cshift(Idx& xp, Idx& yp, const Idx x, const Idx y, const int mu)  {
-  // int res = 1;
   int dx = -(mu+2)%3+1;
   int dy = -(mu+1)%3+1;
   if(mu>=3){
@@ -103,41 +105,6 @@ void cshift(Idx& xp, Idx& yp, const Idx x, const Idx y, const int mu)  {
   }
   xp = (x+dx+Lx)%Lx;
   yp = (y+dy+Ly)%Ly;
-
-  // if(mu==0){
-  //   xp=mod(x-1,Lx);
-  //   yp=y;
-  //   // if(x==0 && nu>=3) res *= -1;
-  // }
-  // else if(mu==1){
-  //   xp=mod(x+1,Lx);
-  //   yp=mod(y-1,Ly);
-  //   // if(x==Lx-1 && nu>=3) res *= -1;
-  //   // if(y==0 && nu/2==1) res *= -1;
-  // }
-  // else if(mu==2){
-  //   xp=x;
-  //   yp=mod(y+1,Ly);
-  //   // if(y==Ly-1 && nu/2==1) res *= -1;
-  // }
-  // else if(mu==3){
-  //   xp=mod(x+1,Lx);
-  //   yp=y;
-  //   // if(x==Lx-1 && nu>=3) res *= -1;
-  // }
-  // else if(mu==4){
-  //   xp=mod(x-1,Lx);
-  //   yp=mod(y+1,Ly);
-  //   // if(x==0 && nu>=3) res *= -1;
-  //   // if(y==Ly-1 && nu/2==1) res *= -1;
-  // }
-  // else if(mu==5){
-  //   xp=x;
-  //   yp=mod(y-1,Ly);
-  //   // if(y==0 && nu/2==1 ) res *= -1;
-  // }
-  // else assert(false);
-  // return res;
 }
 
 void cshift(Idx& ip, const Idx i, const int mu)  {
@@ -145,7 +112,6 @@ void cshift(Idx& ip, const Idx i, const int mu)  {
   get_xy(x, y, i);
   cshift(xp, yp, x, y, mu);
   ip = idx(xp, yp);
-  // return res;
 }
 
 
@@ -218,15 +184,12 @@ struct Spin {
     for(Idx x=0; x<Lx; x++){
       for(Idx y=0; y<Ly; y++){
         if( !is_site(x,y) ) continue;
-        const Idx xp = mod(x+dx,Lx);
-        const Idx yp = mod(y+dy,Ly);
-        // const Idx xp = (x+dx+Lx)%Lx;
-        // const Idx yp = (y+dy+Ly)%Ly;
+        // const Idx xp = mod(x+dx,Lx);
+        // const Idx yp = mod(y+dy,Ly);
+        const Idx xp = (x+dx+Lx)%Lx;
+        const Idx yp = (y+dy+Ly)%Ly;
         if( !is_site(xp,yp) ) continue;
 
-        // int sign = 1;
-        // if( x+dx>=Lx && nu>=3 ) sign *= -1;
-        // if( y+dy>=Ly && nu/2==1 ) sign *= -1;
         res += (*this)(x,y) * (*this)(xp,yp);
         counter++;
       }}
@@ -257,16 +220,13 @@ struct Spin {
     assert( is_site(x,y) );
 
     double res = 0.0;
-    // int counter = 0;
     for(int mu=0; mu<SIX; mu++){
       if( !is_link(x,y,mu) ) continue;
       Idx xp, yp;
       cshift( xp, yp, x, y, mu );
       res += (*this)(x,y) * (*this)(xp,yp);
-      // counter++;
     }
-    // assert( counter==3 );
-    res /= 3;
+    res *= 0.5 * kappa * B;
 
     return res;
   }
@@ -275,20 +235,18 @@ struct Spin {
   double eps_1pt() const {
     double res = 0.0;
 
-    // int counter = 0;
-#ifdef _OPENMP
-#pragma omp parallel for collapse(2) num_threads(nparallel)
-#endif
+// #ifdef _OPENMP
+// #pragma omp parallel for collapse(2) num_threads(nparallel)
+// #endif
+    int counter = 0;
     for(Idx x=0; x<Lx; x++){
       for(Idx y=0; y<Ly; y++){
         if( !is_site(x,y) ) continue;
         res += eps( x, y );
-        // counter++;
+        counter++;
       }}
 
-    // assert( counter==Lx*Ly*2/3 );
-    res /= 2.0*Lx*Ly/3.0;
-
+    res /= counter;
     return res;
   }
 
@@ -303,9 +261,6 @@ struct Spin {
     for(Idx x=0; x<Lx; x++){
       for(Idx y=0; y<Ly; y++){
         if( !is_site(x,y) ) continue;
-
-        // const Idx xp = mod(x+dx,Lx);
-        // const Idx yp = mod(y+dy,Ly);
         const Idx xp = (x+dx+Lx)%Lx;
         const Idx yp = (y+dy+Ly)%Ly;
         if( !is_site(xp,yp) ) continue;
@@ -336,23 +291,82 @@ struct Spin {
 
 
 
-  // double EMT( const Idx x, const Idx y, const int mu ) const {
-  //   assert(0<=x && x<Lx);
-  //   assert(0<=y && y<Ly);
-  //   assert(0<=mu && mu<3);
-  //   assert( is_site(x,y) );
+  double T( const Idx x, const Idx y, const int mu ) const {
+    assert(0<=x && x<Lx);
+    assert(0<=y && y<Ly);
+    assert(0<=mu && mu<3);
+    assert( is_site(x,y) );
 
-  //   assert( is_link(x,y,mu) );
-  //   Idx xp, yp;
-  //   const int sign = cshift( xp, yp, x, y, mu );
+    assert( is_link(x,y,mu) );
+    Idx xp, yp;
+    cshift( xp, yp, x, y, mu );
 
-  //   double res = 0.0;
-  //   res -= B * sign * (*this)(x,y)*(*this)(xp,yp);
-  //   res += 0.75 * kappa * B * eps(x,y);
-  //   res += 0.75 * kappa * B * eps(xp,yp);
+    double res = 0.0;
+    res -= B * (*this)(x,y)*(*this)(xp,yp);
+    res += 0.5 * ( eps(x,y)+eps(xp,yp) ); // mu deriv
 
-  //   return res;
-  // }
+    return res;
+  }
+
+
+  double T_1pt( const int mu ) const {
+    double res = 0.0;
+
+    // #ifdef _OPENMP
+    // #pragma omp parallel for collapse(2) num_threads(nparallel)
+    // #endif
+    int counter = 0;
+    for(Idx x=0; x<Lx; x++){
+      for(Idx y=0; y<Ly; y++){
+        if( !is_link(x,y,mu) ) continue;
+        res += T( x, y, mu );
+        counter++;
+      }}
+
+    res /= counter;
+    return res;
+  }
+
+
+
+
+//   double TT_corr( const Idx dx, const Idx dy ) const {
+//     assert(0<=dx && dx<Lx);
+//     assert(0<=dy && dy<Ly);
+
+//     double res = 0.0;
+//     int counter = 0;
+
+//     for(Idx x=0; x<Lx; x++){
+//       for(Idx y=0; y<Ly; y++){
+//         if( !is_site(x,y) ) continue;
+//         const Idx xp = (x+dx+Lx)%Lx;
+//         const Idx yp = (y+dy+Ly)%Ly;
+//         if( !is_site(xp,yp) ) continue;
+
+//         res += T(x,y) * T(xp,yp);
+//         counter++;
+//       }}
+
+//     res /= counter;
+//     return res;
+//   }
+
+
+//   std::vector<double> TT_corr() const {
+//     std::vector<double> corr(N, 0.0);
+
+// #ifdef _OPENMP
+// #pragma omp parallel for collapse(2) num_threads(nparallel)
+// #endif
+//     for(Idx dx=0; dx<Lx; dx++){
+//       for(Idx dy=0; dy<Ly; dy++){
+//         corr[idx(dx,dy)] = TT_corr( dx, dy );
+//       }}
+
+//     return corr;
+//   }
+
 
 
 
@@ -375,9 +389,7 @@ struct Spin {
 
 
 void heatbath( Spin& s ){
-// #ifdef _OPENMP
-// #pragma omp parallel for num_threads(nparallel)
-// #endif
+  // omp not allowed
   for(Idx i=0; i<Lx*Ly; i++){
     if( !is_site(i) ) continue;
 
@@ -427,15 +439,6 @@ void wolff( Spin& s ){
     }
   }
 }
-
-
-// void change_BC_x( Spin& s ){
-//   const Idx x=0;
-//   double Eorig = 0.0;
-//   for(Idx y=0; y<Ly; y++){
-//     s(x,y);
-//   }
-// }
 
 
 
