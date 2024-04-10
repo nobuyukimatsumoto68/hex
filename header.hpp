@@ -20,11 +20,11 @@ constexpr int THREE = 3;
 constexpr int SIX = 6;
 
 
-constexpr Idx Lx = 3; // 12
-constexpr Idx Ly = 3;
-// constexpr Idx Lx = 6*12; // 12
-// constexpr Idx Ly = 2*Lx;
-constexpr int nparallel = 10;
+// constexpr Idx Lx = 3; // 12
+// constexpr Idx Ly = 3;
+constexpr Idx Lx = 6*6; // 12
+constexpr Idx Ly = 2*Lx;
+constexpr int nparallel = 8;
 
 
 constexpr int nu = 1; // PP, PA, AA, AP
@@ -227,6 +227,7 @@ struct Spin {
       res += (*this)(x,y) * (*this)(xp,yp);
     }
     res *= 0.5 * kappa * B;
+    res -= 1.0;
 
     return res;
   }
@@ -290,19 +291,31 @@ struct Spin {
 
 
 
+  double K( const Idx x, const Idx y, const int mu ) const {
+    assert(0<=x && x<Lx);
+    assert(0<=y && y<Ly);
+    assert(0<=mu && mu<3);
+    assert( is_link(x,y,mu) );
+
+    Idx xp, yp;
+    cshift( xp, yp, x, y, mu );
+
+    const double res = B * (*this)(x,y)*(*this)(xp,yp);
+    return res;
+  }
+
 
   double T( const Idx x, const Idx y, const int mu ) const {
     assert(0<=x && x<Lx);
     assert(0<=y && y<Ly);
     assert(0<=mu && mu<3);
-    assert( is_site(x,y) );
-
     assert( is_link(x,y,mu) );
-    Idx xp, yp;
-    cshift( xp, yp, x, y, mu );
 
     double res = 0.0;
-    res -= B * (*this)(x,y)*(*this)(xp,yp);
+    res += - K(x, y, mu);
+
+    Idx xp, yp;
+    cshift( xp, yp, x, y, mu );
     res += 0.5 * ( eps(x,y)+eps(xp,yp) ); // mu deriv
 
     return res;
@@ -330,42 +343,46 @@ struct Spin {
 
 
 
-//   double TT_corr( const Idx dx, const Idx dy ) const {
-//     assert(0<=dx && dx<Lx);
-//     assert(0<=dy && dy<Ly);
+  double TT_corr( const Idx dx, const Idx dy, const int mu, const int nu ) const {
+    assert(0<=dx && dx<Lx);
+    assert(0<=dy && dy<Ly);
 
-//     double res = 0.0;
-//     int counter = 0;
+    double res = 0.0;
+    int counter = 0;
 
-//     for(Idx x=0; x<Lx; x++){
-//       for(Idx y=0; y<Ly; y++){
-//         if( !is_site(x,y) ) continue;
-//         const Idx xp = (x+dx+Lx)%Lx;
-//         const Idx yp = (y+dy+Ly)%Ly;
-//         if( !is_site(xp,yp) ) continue;
+    for(Idx x=0; x<Lx; x++){
+      for(Idx y=0; y<Ly; y++){
+        if( !is_site(x,y) ) continue;
+        Idx c = mod(x-y, 3);
+        if( c!=0 ) continue;
 
-//         res += T(x,y) * T(xp,yp);
-//         counter++;
-//       }}
+        const Idx xp = (x+dx+Lx)%Lx;
+        const Idx yp = (y+dy+Ly)%Ly;
+        c = mod(xp-yp, 3);
+        if( c!=0 || !is_site(xp,yp) ) continue;
 
-//     res /= counter;
-//     return res;
-//   }
+        res += T(x,y,mu) * T(xp,yp,nu);
+        counter++;
+      }}
+
+    res /= counter;
+    return res;
+  }
 
 
-//   std::vector<double> TT_corr() const {
-//     std::vector<double> corr(N, 0.0);
+  std::vector<double> TT_corr(const int mu, const int nu) const {
+    std::vector<double> corr(N, 0.0);
 
-// #ifdef _OPENMP
-// #pragma omp parallel for collapse(2) num_threads(nparallel)
-// #endif
-//     for(Idx dx=0; dx<Lx; dx++){
-//       for(Idx dy=0; dy<Ly; dy++){
-//         corr[idx(dx,dy)] = TT_corr( dx, dy );
-//       }}
+#ifdef _OPENMP
+#pragma omp parallel for collapse(2) num_threads(nparallel)
+#endif
+    for(Idx dx=0; dx<Lx; dx++){
+      for(Idx dy=0; dy<Ly; dy++){
+        corr[idx(dx,dy)] = TT_corr( dx, dy, mu, nu );
+      }}
 
-//     return corr;
-//   }
+    return corr;
+  }
 
 
 
@@ -382,6 +399,30 @@ struct Spin {
     return ss.str();
   }
 
+
+
+  void ckpoint( const std::string& str ) const {
+    std::ofstream of( str, std::ios::out | std::ios::binary | std::ios::trunc);
+    if(!of) assert(false);
+
+    int tmp = 0.0;
+    for(Idx i=0; i<Lx*Ly; i++){
+      tmp = (*this)[i];
+      of.write((char*) &tmp, sizeof(int) );
+    }
+    of.close();
+  }
+
+  void read( const std::string& str ) {
+    std::ifstream ifs( str, std::ios::in | std::ios::binary );
+    if(!ifs) assert(false);
+
+    int tmp;
+    for(Idx i=0; i<Lx*Ly; ++i){
+      ifs.read((char*) &tmp, sizeof(int) );
+      (*this)[i] = tmp;
+    }
+  }
 
 
 
