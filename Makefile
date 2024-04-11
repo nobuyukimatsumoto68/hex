@@ -1,5 +1,5 @@
-CXX = g++ # icpx # g++
-CXXFLAGS = -O3 -std=c++17 -fopenmp # -openmp
+CXX = /mnt/hdd_baracuda/opt/llvm-project/build/bin/clang++ # icpx # g++
+CXXFLAGS = -Wall -O3 -std=c++20 -fopenmp -march=native
 INCLUDES = -I/projectnb/qfe/nmatsumo/opt/eigen/
 
 NVCC = nvcc
