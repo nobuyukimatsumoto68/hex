@@ -26,9 +26,9 @@ constexpr int TWO = 2;
 constexpr int THREE = 3;
 constexpr int SIX = 6;
 
-
-constexpr Idx Lx = 9; // 12
-constexpr Idx Ly = 12;
+constexpr int mult = 3;
+constexpr Idx Lx = 3*2*mult; // 12
+constexpr Idx Ly = 3*1*mult;
 
 // constexpr Idx Lx = 6*4; // 12
 // constexpr Idx Ly = 2*Lx;
@@ -393,7 +393,7 @@ struct Spin {
     res -= K(x, y, mu);
     res += 0.5 * ( eps(x,y)+eps(xp,yp) ); // mu deriv
 
-    res /= -3.0;
+    res /= 3.0;
 
     return res;
   }
@@ -450,7 +450,7 @@ struct Spin {
     res -= K(x, y, mu);
     res += 0.5 * ( eps(x,y)+eps(xp,yp) ); // mu deriv
 
-    res /= -std::sqrt(3.0);
+    res /= std::sqrt(3.0);
 
     return res;
   }
@@ -566,28 +566,6 @@ struct Spin {
   }
 
 
-  Double TxxTxy_corr( const Idx dx, const Idx dy ) const {
-    assert(0<=dx && dx<Lx);
-    assert(0<=dy && dy<Ly);
-
-    Double res = 0.0;
-    int counter = 0;
-
-    for(Idx x=0; x<Lx; x++){
-      for(Idx y=0; y<Ly; y++){
-        if( !is_site(x,y) ) continue;
-        const Idx xp = (x+dx+2*Lx)%Lx;
-        const Idx yp = (y+dy+2*Ly)%Ly;
-        if( !is_site(xp,yp) ) continue;
-        res += Txx(x,y) * Txy(xp,yp);
-        counter++;
-      }}
-
-    res /= counter;
-    return res;
-  }
-
-
   std::vector<Double> TxxTxx_corr() const {
     std::vector<Double> corr(N, 0.0);
 
@@ -616,6 +594,89 @@ struct Spin {
       }}
     return corr;
   }
+
+
+  Double Txx_ss( const Idx dx1, const Idx dy1, const Idx dx2, const Idx dy2 ) const {
+    assert(0<=dx1 && dx1<Lx);
+    assert(0<=dy1 && dy1<Ly);
+    assert(0<=dx2 && dx2<Lx);
+    assert(0<=dy2 && dy2<Ly);
+
+    Double res = 0.0;
+    int counter = 0;
+
+    for(Idx x=0; x<Lx; x++){
+      for(Idx y=0; y<Ly; y++){
+        if( !is_site(x,y) ) continue;
+        const Idx x1 = (x+dx1+2*Lx)%Lx;
+        const Idx y1 = (y+dy1+2*Ly)%Ly;
+        const Idx x2 = (x+dx2+2*Lx)%Lx;
+        const Idx y2 = (y+dy2+2*Ly)%Ly;
+        if( !is_site(x1,y1) || !is_site(x2,y2) ) continue;
+        res += Txx(x,y) * (*this)(x1,y1) * (*this)(x2,y2);
+        counter++;
+      }}
+
+    res /= counter;
+    return res;
+  }
+
+
+  std::vector<Double> Txx_ss_corr( const Idx dx1, const Idx dy1 ) const {
+    std::vector<Double> corr(N, 0.0);
+
+#ifdef _OPENMP
+#pragma omp parallel for collapse(2) num_threads(nparallel)
+    // #pragma omp parallel for num_threads(nparallel) schedule(static)
+#endif
+    for(Idx dx2=0; dx2<Lx; dx2++){
+      for(Idx dy2=0; dy2<Ly; dy2++){
+        corr[idx(dx2,dy2)] = Txx_ss_corr( dx1, dy1, dx2, dy2 );
+      }}
+    return corr;
+  }
+
+
+  Double Txy_ss( const Idx dx1, const Idx dy1, const Idx dx2, const Idx dy2 ) const {
+    assert(0<=dx1 && dx1<Lx);
+    assert(0<=dy1 && dy1<Ly);
+    assert(0<=dx2 && dx2<Lx);
+    assert(0<=dy2 && dy2<Ly);
+
+    Double res = 0.0;
+    int counter = 0;
+
+    for(Idx x=0; x<Lx; x++){
+      for(Idx y=0; y<Ly; y++){
+        if( !is_site(x,y) ) continue;
+        const Idx x1 = (x+dx1+2*Lx)%Lx;
+        const Idx y1 = (y+dy1+2*Ly)%Ly;
+        const Idx x2 = (x+dx2+2*Lx)%Lx;
+        const Idx y2 = (y+dy2+2*Ly)%Ly;
+        if( !is_site(x1,y1) || !is_site(x2,y2) ) continue;
+        res += Txy(x,y) * (*this)(x1,y1) * (*this)(x2,y2);
+        counter++;
+      }}
+
+    res /= counter;
+    return res;
+  }
+
+
+  std::vector<Double> Txy_ss_corr( const Idx dx1, const Idx dy1 ) const {
+    std::vector<Double> corr(N, 0.0);
+
+#ifdef _OPENMP
+#pragma omp parallel for collapse(2) num_threads(nparallel)
+    // #pragma omp parallel for num_threads(nparallel) schedule(static)
+#endif
+    for(Idx dx2=0; dx2<Lx; dx2++){
+      for(Idx dy2=0; dy2<Ly; dy2++){
+        corr[idx(dx2,dy2)] = Txy_ss_corr( dx1, dy1, dx2, dy2 );
+      }}
+    return corr;
+  }
+
 
 
 
