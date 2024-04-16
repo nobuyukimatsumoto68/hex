@@ -36,10 +36,10 @@ int main( int argc, char *argv[] ){
   std::filesystem::create_directories( configdir );
 
   // routine
-  const int Nbin = 1e4;
-  const int binsize = 1e4;
-  // const int Nbin = 1e2;
-  // const int binsize = 1e2;
+  // const int Nbin = 1e4;
+  // const int binsize = 1e4;
+  const int Nbin = 1e1;
+  const int binsize = 1e1;
 
   const bool if_read = false;
   const bool if_write = true;

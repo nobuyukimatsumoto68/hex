@@ -1,5 +1,6 @@
 CXX = g++ # /usr/local/bin/clang++ # icpx # g++
 CXXFLAGS = -Wall -O3 -std=c++17 -fopenmp # -g
+CXXFLAGS2 = -Wall -O3 -std=c++17 # -g
 INCLUDES = -I/usr/lib/gcc/x86_64-linux-gnu/11/include/ # -I/usr/lib/gcc/x86_64-linux-gnu/11/
 LDFLAGS = -L/lib/gcc/x86_64-linux-gnu/11/
 
@@ -12,3 +13,6 @@ all: wolff.o
 
 wolff.o: wolff_hex.cc header.hpp
 	$(CXX) $< $(INCLUDES) $(LDFLAGS) $(CXXFLAGS) -o $(DIR)$@
+
+test.o: wolff_hex.cc header.hpp
+	$(CXX) $< $(INCLUDES) $(LDFLAGS) $(CXXFLAGS2) -pg -o $(DIR)$@

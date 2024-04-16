@@ -26,13 +26,13 @@ constexpr int TWO = 2;
 constexpr int THREE = 3;
 constexpr int SIX = 6;
 
-constexpr int mult = 3;
+constexpr int mult = 4;
 constexpr Idx Lx = 3*2*mult; // 12
 constexpr Idx Ly = 3*1*mult;
 
 // constexpr Idx Lx = 6*4; // 12
 // constexpr Idx Ly = 2*Lx;
-constexpr int nparallel = 12; //12
+constexpr int nparallel = 4; //12
 
 
 constexpr int nu = 1; // PP, PA, AA, AP
@@ -113,8 +113,8 @@ void cshift(Idx& xp, Idx& yp, const Idx x, const Idx y, const int mu)  {
     dx *= -1;
     dy *= -1;
   }
-  xp = (x+dx+2*Lx)%Lx;
-  yp = (y+dy+2*Ly)%Ly;
+  xp = (x+dx+Lx)%Lx;
+  yp = (y+dy+Ly)%Ly;
 }
 
 void cshift(Idx& ip, const Idx i, const int mu)  {
@@ -135,8 +135,8 @@ struct Spin {
   Idx N;
   std::vector<int> s;
 
-  int& operator()(const Idx x, const Idx y) { return s[idx(x,y)]; }
-  int operator()(const Idx x, const Idx y) const { return s[idx(x,y)]; }
+  inline int& operator()(const Idx x, const Idx y) { return s[idx(x,y)]; }
+  inline int operator()(const Idx x, const Idx y) const { return s[idx(x,y)]; }
 
   int& operator[](const Idx i) { return s[i]; }
   int operator[](const Idx i) const { return s[i]; }
@@ -194,8 +194,8 @@ struct Spin {
     for(Idx x=0; x<Lx; x++){
       for(Idx y=0; y<Ly; y++){
         if( !is_site(x,y) ) continue;
-        const Idx xp = (x+dx+2*Lx)%Lx;
-        const Idx yp = (y+dy+2*Ly)%Ly;
+        const Idx xp = (x+dx)%Lx;
+        const Idx yp = (y+dy)%Ly;
         if( !is_site(xp,yp) ) continue;
 
         res += (*this)(x,y) * (*this)(xp,yp);
@@ -271,8 +271,8 @@ struct Spin {
     for(Idx x=0; x<Lx; x++){
       for(Idx y=0; y<Ly; y++){
         if( !is_site(x,y) ) continue;
-        const Idx xp = (x+dx+2*Lx)%Lx;
-        const Idx yp = (y+dy+2*Ly)%Ly;
+        const Idx xp = (x+dx)%Lx;
+        const Idx yp = (y+dy)%Ly;
         if( !is_site(xp,yp) ) continue;
 
         res += eps(x,y) * eps(xp,yp);
@@ -347,7 +347,7 @@ struct Spin {
   Double Txx_even( const Idx x, const Idx y ) const {
     assert(0<=x && x<Lx);
     assert(0<=y && y<Ly);
-    assert( get_char(x,y)%3==0 );
+    assert( get_char(x,y)==0 );
 
     Idx xp, yp;
     Double res = 0.0;
@@ -401,7 +401,7 @@ struct Spin {
   Double Txx( const Idx x, const Idx y ) const {
     assert(0<=x && x<Lx);
     assert(0<=y && y<Ly);
-    const int c = get_char(x,y)%3;
+    const int c = get_char(x,y);
     Double res = 0.0;
     if(c==0) res = Txx_even(x,y);
     else if(c==2) res = Txx_odd(x,y);
@@ -411,6 +411,8 @@ struct Spin {
 
 
   Double Txy_even( const Idx x, const Idx y ) const {
+    assert( get_char(x,y)==0 );
+
     Idx xp, yp;
     Double res = 0.0;
     int mu;
@@ -432,9 +434,7 @@ struct Spin {
 
 
   Double Txy_odd( const Idx x, const Idx y ) const {
-    assert(0<=x && x<Lx);
-    assert(0<=y && y<Ly);
-    assert( get_char(x,y)%3==2 );
+    assert( get_char(x,y)==2 );
 
     Idx xp, yp;
     Double res = 0.0;
@@ -458,7 +458,7 @@ struct Spin {
   Double Txy( const Idx x, const Idx y ) const {
     assert(0<=x && x<Lx);
     assert(0<=y && y<Ly);
-    const int c = get_char(x,y)%3;
+    const int c = get_char(x,y);
     Double res = 0.0;
     if(c==0) res = Txy_even(x,y);
     else if(c==2) res = Txy_odd(x,y);
@@ -554,10 +554,31 @@ struct Spin {
     for(Idx x=0; x<Lx; x++){
       for(Idx y=0; y<Ly; y++){
         if( !is_site(x,y) ) continue;
-        const Idx xp = (x+dx+2*Lx)%Lx;
-        const Idx yp = (y+dy+2*Ly)%Ly;
+        const Idx xp = (x+dx)%Lx;
+        const Idx yp = (y+dy)%Ly;
         if( !is_site(xp,yp) ) continue;
         res += Txx(x,y) * Txx(xp,yp);
+        counter++;
+      }}
+
+    res /= counter;
+    return res;
+  }
+
+  Double TxxTxy_corr( const Idx dx, const Idx dy ) const {
+    assert(0<=dx && dx<Lx);
+    assert(0<=dy && dy<Ly);
+
+    Double res = 0.0;
+    int counter = 0;
+
+    for(Idx x=0; x<Lx; x++){
+      for(Idx y=0; y<Ly; y++){
+        if( !is_site(x,y) ) continue;
+        const Idx xp = (x+dx)%Lx;
+        const Idx yp = (y+dy)%Ly;
+        if( !is_site(xp,yp) ) continue;
+        res += Txx(x,y) * Txy(xp,yp);
         counter++;
       }}
 
@@ -608,10 +629,10 @@ struct Spin {
     for(Idx x=0; x<Lx; x++){
       for(Idx y=0; y<Ly; y++){
         if( !is_site(x,y) ) continue;
-        const Idx x1 = (x+dx1+2*Lx)%Lx;
-        const Idx y1 = (y+dy1+2*Ly)%Ly;
-        const Idx x2 = (x+dx2+2*Lx)%Lx;
-        const Idx y2 = (y+dy2+2*Ly)%Ly;
+        const Idx x1 = (x+dx1)%Lx;
+        const Idx y1 = (y+dy1)%Ly;
+        const Idx x2 = (x+dx2)%Lx;
+        const Idx y2 = (y+dy2)%Ly;
         if( !is_site(x1,y1) || !is_site(x2,y2) ) continue;
         res += Txx(x,y) * (*this)(x1,y1) * (*this)(x2,y2);
         counter++;
@@ -631,7 +652,7 @@ struct Spin {
 #endif
     for(Idx dx2=0; dx2<Lx; dx2++){
       for(Idx dy2=0; dy2<Ly; dy2++){
-        corr[idx(dx2,dy2)] = Txx_ss_corr( dx1, dy1, dx2, dy2 );
+        corr[idx(dx2,dy2)] = Txx_ss( dx1, dy1, dx2, dy2 );
       }}
     return corr;
   }
@@ -649,10 +670,10 @@ struct Spin {
     for(Idx x=0; x<Lx; x++){
       for(Idx y=0; y<Ly; y++){
         if( !is_site(x,y) ) continue;
-        const Idx x1 = (x+dx1+2*Lx)%Lx;
-        const Idx y1 = (y+dy1+2*Ly)%Ly;
-        const Idx x2 = (x+dx2+2*Lx)%Lx;
-        const Idx y2 = (y+dy2+2*Ly)%Ly;
+        const Idx x1 = (x+dx1)%Lx;
+        const Idx y1 = (y+dy1)%Ly;
+        const Idx x2 = (x+dx2)%Lx;
+        const Idx y2 = (y+dy2)%Ly;
         if( !is_site(x1,y1) || !is_site(x2,y2) ) continue;
         res += Txy(x,y) * (*this)(x1,y1) * (*this)(x2,y2);
         counter++;
@@ -672,7 +693,7 @@ struct Spin {
 #endif
     for(Idx dx2=0; dx2<Lx; dx2++){
       for(Idx dy2=0; dy2<Ly; dy2++){
-        corr[idx(dx2,dy2)] = Txy_ss_corr( dx1, dy1, dx2, dy2 );
+        corr[idx(dx2,dy2)] = Txy_ss( dx1, dy1, dx2, dy2 );
       }}
     return corr;
   }
