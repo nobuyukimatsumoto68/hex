@@ -12,6 +12,13 @@
 
 int main( int argc, char *argv[] ){
 
+  if (argc>1){
+    mult = atoi(argv[1]);
+  }
+  Lx = 3*2*mult; // 12
+  Ly = 3*1*mult;
+
+
   std::cout << std::scientific << std::setprecision(15);
   std::cout << "int = " << std::numeric_limits<int>::digits10 << std::endl;
   std::cout << "Idx = " << std::numeric_limits<Idx>::digits10 << std::endl;
@@ -31,30 +38,42 @@ int main( int argc, char *argv[] ){
 
   // routine
   const int Nbin = 1e4;
-  const int binsize = 1e4;
+  const int binsize = 1e5;
+  // const int Nbin = 1e2;
+  // const int binsize = 1e2;
 
-  const bool if_read = false;
+  const bool if_read = true;
   const bool if_write = true;
-  const int init_label = 0;
 
   const int Nheatbath = 4;
   const int Nwolff = 10;
   const int Nrepeat = 20;
 
-  const int seed = 12;
-
+  const unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+  // std::cout << seed << std::endl;
 
   // init
-  const int ninit = init_label * binsize;
   const int Nconf = Nbin*binsize;
   set_gen( seed );
   Spin s( Lx*Ly );
 
+  int init_label = 0;
   if(if_read){
+    std::filesystem::path dir{configdir};
+    std::string file;
+    for(auto const& dir_entry : std::filesystem::directory_iterator{dir}){
+      file = dir_entry.path();
+      const std::size_t c1 = file.find("ckpoint");
+      const std::size_t c2 = file.find(".dat");
+      const int tmp = std::stoi( file.substr(c1+7, c2-c1-7) );
+      if(init_label < tmp) init_label = tmp;
+    }
     const std::filesystem::path filepath = static_cast<std::string>(configdir)+"ckpoint"+std::to_string(init_label)+".dat";
     s.read( filepath );
   }
   else s.random();
+
+  int ninit = init_label * binsize;
 
   {
     std::ofstream of( description+".log", std::ios::out | std::ios::app );
@@ -131,6 +150,9 @@ int main( int argc, char *argv[] ){
       const int label = (n+1)/binsize;
       const std::string filepath = configdir+"ckpoint"+std::to_string(label)+".dat";
       s.ckpoint( filepath );
+      const int label2 = label-1;
+      const std::string filepath2 = configdir+"ckpoint"+std::to_string(label2)+".dat";
+      std::filesystem::remove( filepath2 );
 
       const auto end = std::chrono::steady_clock::now();
       const std::chrono::duration<double> elapsed_seconds{end - start};

@@ -26,13 +26,13 @@ constexpr int TWO = 2;
 constexpr int THREE = 3;
 constexpr int SIX = 6;
 
-constexpr int mult = 4;
-constexpr Idx Lx = 3*2*mult; // 12
-constexpr Idx Ly = 3*1*mult;
+int mult = 3;
+Idx Lx = 3*2*mult; // 12
+Idx Ly = 3*1*mult;
 
 // constexpr Idx Lx = 6*4; // 12
 // constexpr Idx Ly = 2*Lx;
-constexpr int nparallel = 4; //12
+constexpr int nparallel = 12; //12
 
 
 constexpr int nu = 1; // PP, PA, AA, AP

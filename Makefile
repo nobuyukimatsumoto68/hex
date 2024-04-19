@@ -1,8 +1,11 @@
-CXX = g++ # /usr/local/bin/clang++ # icpx # g++
-CXXFLAGS = -Wall -O3 -std=c++17 -fopenmp # -g
-CXXFLAGS2 = -Wall -O3 -std=c++17 # -g
-INCLUDES = -I/usr/lib/gcc/x86_64-linux-gnu/11/include/ # -I/usr/lib/gcc/x86_64-linux-gnu/11/
-LDFLAGS = -L/lib/gcc/x86_64-linux-gnu/11/
+CXX = g++
+# CXX = clang++
+# CXX = icpx
+CXXFLAGS = -Wall -O3 -std=c++17 -fopenmp# -g
+# CXXFLAGS = -Wall -O3 -std=c++17 -qopenmp # -g
+# CXXFLAGS2 = -Wall -O3 -std=c++17 # -g
+INCLUDES = # -I/usr/lib/gcc/x86_64-linux-gnu/11/include/ # -I/usr/lib/gcc/x86_64-linux-gnu/11/
+LDFLAGS = -lstdc++fs # -L/lib/gcc/x86_64-linux-gnu/11/
 
 DIR = ./
 
