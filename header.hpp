@@ -26,7 +26,7 @@ constexpr int TWO = 2;
 constexpr int THREE = 3;
 constexpr int SIX = 6;
 
-int mult = 3;
+int mult = 4;
 Idx Lx = 3*2*mult; // 12
 Idx Ly = 3*1*mult;
 
@@ -236,7 +236,7 @@ struct Spin {
       res += (*this)(x,y) * (*this)(xp,yp);
     }
     res *= 0.5 * kappa * B;
-    // res -= 1.0;
+    res -= 1.0;
 
     return res;
   }
@@ -617,6 +617,80 @@ struct Spin {
   }
 
 
+  Double Txx_eps( const Idx dx1, const Idx dy1 ) const {
+    assert(0<=dx1 && dx1<Lx);
+    assert(0<=dy1 && dy1<Ly);
+
+    Double res = 0.0;
+    int counter = 0;
+
+    for(Idx x=0; x<Lx; x++){
+      for(Idx y=0; y<Ly; y++){
+        if( !is_site(x,y) ) continue;
+        const Idx x1 = (x+dx1)%Lx;
+        const Idx y1 = (y+dy1)%Ly;
+        if( !is_site(x1,y1) ) continue;
+        res += Txx(x,y) * eps(x1,y1);
+        counter++;
+      }}
+
+    res /= counter;
+    return res;
+  }
+
+
+  std::vector<Double> Txx_eps_corr() const {
+    std::vector<Double> corr(N, 0.0);
+
+#ifdef _OPENMP
+#pragma omp parallel for collapse(2) num_threads(nparallel)
+    // #pragma omp parallel for num_threads(nparallel) schedule(static)
+#endif
+    for(Idx dx1=0; dx1<Lx; dx1++){
+      for(Idx dy1=0; dy1<Ly; dy1++){
+        corr[idx(dx1,dy1)] = Txx_eps( dx1, dy1 );
+      }}
+    return corr;
+  }
+
+
+  Double Txy_eps( const Idx dx1, const Idx dy1 ) const {
+    assert(0<=dx1 && dx1<Lx);
+    assert(0<=dy1 && dy1<Ly);
+
+    Double res = 0.0;
+    int counter = 0;
+
+    for(Idx x=0; x<Lx; x++){
+      for(Idx y=0; y<Ly; y++){
+        if( !is_site(x,y) ) continue;
+        const Idx x1 = (x+dx1)%Lx;
+        const Idx y1 = (y+dy1)%Ly;
+        if( !is_site(x1,y1) ) continue;
+        res += Txy(x,y) * eps(x1,y1);
+        counter++;
+      }}
+
+    res /= counter;
+    return res;
+  }
+
+
+  std::vector<Double> Txy_eps_corr() const {
+    std::vector<Double> corr(N, 0.0);
+
+#ifdef _OPENMP
+#pragma omp parallel for collapse(2) num_threads(nparallel)
+    // #pragma omp parallel for num_threads(nparallel) schedule(static)
+#endif
+    for(Idx dx1=0; dx1<Lx; dx1++){
+      for(Idx dy1=0; dy1<Ly; dy1++){
+        corr[idx(dx1,dy1)] = Txy_eps( dx1, dy1 );
+      }}
+    return corr;
+  }
+
+
   Double Txx_ss( const Idx dx1, const Idx dy1, const Idx dx2, const Idx dy2 ) const {
     assert(0<=dx1 && dx1<Lx);
     assert(0<=dy1 && dy1<Ly);
@@ -656,6 +730,7 @@ struct Spin {
       }}
     return corr;
   }
+
 
 
   Double Txy_ss( const Idx dx1, const Idx dy1, const Idx dx2, const Idx dy2 ) const {

@@ -38,11 +38,9 @@ int main( int argc, char *argv[] ){
 
   // routine
   const int Nbin = 1e4;
-  const int binsize = 1e5;
-  // const int Nbin = 1e2;
-  // const int binsize = 1e2;
+  const int binsize = 1e4; // 1e5
 
-  const bool if_read = true;
+  const bool if_read = false;
   const bool if_write = true;
 
   const int Nheatbath = 4;
@@ -102,6 +100,8 @@ int main( int argc, char *argv[] ){
   Obs<Scalar> Txy( "Txy", binsize, [](const Spin& s0){ return Scalar( s0.Txy_1pt() ); } );
   Obs<Corr> TxxTxx( "TxxTxx", binsize, [](const Spin& s0){ return Corr( s0.TxxTxx_corr() ); } );
   Obs<Corr> TxxTxy( "TxxTxy", binsize, [](const Spin& s0){ return Corr( s0.TxxTxy_corr() ); } );
+  Obs<Corr> Txx_eps( "Txx_eps", binsize, [](const Spin& s0){ return Corr( s0.Txx_eps_corr() ); } );
+  Obs<Corr> Txy_eps( "Txy_eps", binsize, [](const Spin& s0){ return Corr( s0.Txy_eps_corr() ); } );
   Obs<Corr> Txx_ss( "Txx_ss", binsize, [](const Spin& s0){ return Corr( s0.Txx_ss_corr(Lx/2,0) ); } );
   Obs<Corr> Txy_ss( "Txy_ss", binsize, [](const Spin& s0){ return Corr( s0.Txy_ss_corr(Lx/2,0) ); } );
   //----------------------------
@@ -126,6 +126,8 @@ int main( int argc, char *argv[] ){
     // //
     TxxTxx.meas( s );
     TxxTxy.meas( s );
+    Txx_eps.meas( s );
+    Txy_eps.meas( s );
     Txx_ss.meas( s );
     Txy_ss.meas( s );
     //------
@@ -142,6 +144,8 @@ int main( int argc, char *argv[] ){
       //
       TxxTxx.write_and_clear( datadir, (n+1)/binsize );
       TxxTxy.write_and_clear( datadir, (n+1)/binsize );
+      Txx_eps.write_and_clear( datadir, (n+1)/binsize );
+      Txy_eps.write_and_clear( datadir, (n+1)/binsize );
       Txx_ss.write_and_clear( datadir, (n+1)/binsize );
       Txy_ss.write_and_clear( datadir, (n+1)/binsize );
       // -------
