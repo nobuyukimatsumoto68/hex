@@ -4,7 +4,7 @@
 #include <stack>
 #include <cassert>
 
-// #include <sstream>
+#include <sstream>
 #include <fstream>
 
 #include <string>
@@ -700,7 +700,6 @@ struct Spin {
 
 
 
-
   std::string print() const {
     std::stringstream ss;
     for(Idx y=Ly-1; y>=0; y--){
@@ -982,29 +981,5 @@ struct Obs {
 };
 
 
-
-
-inline Corr ss_corr_wrapper( const Spin& s ){ return Corr( s.ss_corr() ); }
-inline Scalar eps_1pt_wrapper( const Spin& s ){ return Scalar( s.eps_1pt() ); }
-inline Corr epseps_corr_wrapper( const Spin& s ){ return Corr( s.epseps_corr() ); }
-
-
-
-// struct ObsList {
-//   std::vector<std::any> list;
-
-//   // T sum;
-//   int counter;
-
-//   ObsList
-//   ()
-//     : counter(0)
-//   {}
-
-//   void meas(){
-//     Obs tmp = list[0];
-//     tmp.meas();
-//   }
-// };
 
 
