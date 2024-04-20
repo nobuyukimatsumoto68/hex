@@ -104,6 +104,8 @@ int main( int argc, char *argv[] ){
   Obs<Corr> Txy_eps( "Txy_eps", binsize, [](const Spin& s0){ return Corr( s0.Txy_eps_corr() ); } );
   Obs<Corr> Txx_ss( "Txx_ss", binsize, [](const Spin& s0){ return Corr( s0.Txx_ss_corr(Lx/2,0) ); } );
   Obs<Corr> Txy_ss( "Txy_ss", binsize, [](const Spin& s0){ return Corr( s0.Txy_ss_corr(Lx/2,0) ); } );
+  Obs<Corr> Txx_epseps( "Txx_epseps", binsize, [](const Spin& s0){ return Corr( s0.Txx_epseps_corr(Lx/2,0) ); } );
+  Obs<Corr> Txy_epseps( "Txy_epseps", binsize, [](const Spin& s0){ return Corr( s0.Txy_epseps_corr(Lx/2,0) ); } );
   //----------------------------
 
 
@@ -130,6 +132,8 @@ int main( int argc, char *argv[] ){
     Txy_eps.meas( s );
     Txx_ss.meas( s );
     Txy_ss.meas( s );
+    Txx_epseps.meas( s );
+    Txy_epseps.meas( s );
     //------
 
     // write out and clear
@@ -148,6 +152,8 @@ int main( int argc, char *argv[] ){
       Txy_eps.write_and_clear( datadir, (n+1)/binsize );
       Txx_ss.write_and_clear( datadir, (n+1)/binsize );
       Txy_ss.write_and_clear( datadir, (n+1)/binsize );
+      Txx_epseps.write_and_clear( datadir, (n+1)/binsize );
+      Txy_epseps.write_and_clear( datadir, (n+1)/binsize );
       // -------
       std::clog << "iter: " << n+1 << std::endl;
 

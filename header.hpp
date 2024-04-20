@@ -26,7 +26,7 @@ constexpr int TWO = 2;
 constexpr int THREE = 3;
 constexpr int SIX = 6;
 
-int mult = 4;
+int mult = 6;
 Idx Lx = 3*2*mult; // 12
 Idx Ly = 3*1*mult;
 
@@ -769,6 +769,89 @@ struct Spin {
     for(Idx dx2=0; dx2<Lx; dx2++){
       for(Idx dy2=0; dy2<Ly; dy2++){
         corr[idx(dx2,dy2)] = Txy_ss( dx1, dy1, dx2, dy2 );
+      }}
+    return corr;
+  }
+
+
+  Double Txx_epseps( const Idx dx1, const Idx dy1, const Idx dx2, const Idx dy2 ) const {
+    assert(0<=dx1 && dx1<Lx);
+    assert(0<=dy1 && dy1<Ly);
+    assert(0<=dx2 && dx2<Lx);
+    assert(0<=dy2 && dy2<Ly);
+
+    Double res = 0.0;
+    int counter = 0;
+
+    for(Idx x=0; x<Lx; x++){
+      for(Idx y=0; y<Ly; y++){
+        if( !is_site(x,y) ) continue;
+        const Idx x1 = (x+dx1)%Lx;
+        const Idx y1 = (y+dy1)%Ly;
+        const Idx x2 = (x+dx2)%Lx;
+        const Idx y2 = (y+dy2)%Ly;
+        if( !is_site(x1,y1) || !is_site(x2,y2) ) continue;
+        res += Txx(x,y) * eps(x1,y1) * eps(x2,y2);
+        counter++;
+      }}
+
+    res /= counter;
+    return res;
+  }
+
+
+  std::vector<Double> Txx_epseps_corr( const Idx dx1, const Idx dy1 ) const {
+    std::vector<Double> corr(N, 0.0);
+
+#ifdef _OPENMP
+#pragma omp parallel for collapse(2) num_threads(nparallel)
+    // #pragma omp parallel for num_threads(nparallel) schedule(static)
+#endif
+    for(Idx dx2=0; dx2<Lx; dx2++){
+      for(Idx dy2=0; dy2<Ly; dy2++){
+        corr[idx(dx2,dy2)] = Txx_epseps( dx1, dy1, dx2, dy2 );
+      }}
+    return corr;
+  }
+
+
+
+  Double Txy_epseps( const Idx dx1, const Idx dy1, const Idx dx2, const Idx dy2 ) const {
+    assert(0<=dx1 && dx1<Lx);
+    assert(0<=dy1 && dy1<Ly);
+    assert(0<=dx2 && dx2<Lx);
+    assert(0<=dy2 && dy2<Ly);
+
+    Double res = 0.0;
+    int counter = 0;
+
+    for(Idx x=0; x<Lx; x++){
+      for(Idx y=0; y<Ly; y++){
+        if( !is_site(x,y) ) continue;
+        const Idx x1 = (x+dx1)%Lx;
+        const Idx y1 = (y+dy1)%Ly;
+        const Idx x2 = (x+dx2)%Lx;
+        const Idx y2 = (y+dy2)%Ly;
+        if( !is_site(x1,y1) || !is_site(x2,y2) ) continue;
+        res += Txy(x,y) * eps(x1,y1) * eps(x2,y2);
+        counter++;
+      }}
+
+    res /= counter;
+    return res;
+  }
+
+
+  std::vector<Double> Txy_epseps_corr( const Idx dx1, const Idx dy1 ) const {
+    std::vector<Double> corr(N, 0.0);
+
+#ifdef _OPENMP
+#pragma omp parallel for collapse(2) num_threads(nparallel)
+    // #pragma omp parallel for num_threads(nparallel) schedule(static)
+#endif
+    for(Idx dx2=0; dx2<Lx; dx2++){
+      for(Idx dy2=0; dy2<Ly; dy2++){
+        corr[idx(dx2,dy2)] = Txy_epseps( dx1, dy1, dx2, dy2 );
       }}
     return corr;
   }
