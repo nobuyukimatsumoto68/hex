@@ -38,7 +38,7 @@ int main( int argc, char *argv[] ){
 
   // routine
   const int Nbin = 1e4;
-  const int binsize = 1e4; // 1e5
+  const int binsize = 1e5; // 1e5
 
   const bool if_read = false;
   const bool if_write = true;
@@ -93,6 +93,7 @@ int main( int argc, char *argv[] ){
 
   // observables
   //-----------
+  Idx x1 = 0, y1 = 0, x2 = Lx/2, y2 = Ly/2;
   Obs<Corr> ss_corr( "ss_corr", binsize, [](const Spin& s0){ return Corr( s0.ss_corr() ); } );
   Obs<Scalar> eps_1pt( "eps_1pt", binsize, [](const Spin& s0){ return Scalar( s0.eps_1pt() ); } );
   Obs<Corr> epseps_corr( "epseps_corr", binsize, [](const Spin& s0){ return Corr( s0.epseps_corr() ); } );
@@ -100,12 +101,12 @@ int main( int argc, char *argv[] ){
   Obs<Scalar> Txy( "Txy", binsize, [](const Spin& s0){ return Scalar( s0.Txy_1pt() ); } );
   Obs<Corr> TxxTxx( "TxxTxx", binsize, [](const Spin& s0){ return Corr( s0.TxxTxx_corr() ); } );
   Obs<Corr> TxxTxy( "TxxTxy", binsize, [](const Spin& s0){ return Corr( s0.TxxTxy_corr() ); } );
-  Obs<Corr> Txx_eps( "Txx_eps", binsize, [](const Spin& s0){ return Corr( s0.Txx_eps_corr() ); } );
-  Obs<Corr> Txy_eps( "Txy_eps", binsize, [](const Spin& s0){ return Corr( s0.Txy_eps_corr() ); } );
-  Obs<Corr> Txx_ss( "Txx_ss", binsize, [](const Spin& s0){ return Corr( s0.Txx_ss_corr(Lx/2,0) ); } );
-  Obs<Corr> Txy_ss( "Txy_ss", binsize, [](const Spin& s0){ return Corr( s0.Txy_ss_corr(Lx/2,0) ); } );
-  Obs<Corr> Txx_epseps( "Txx_epseps", binsize, [](const Spin& s0){ return Corr( s0.Txx_epseps_corr(Lx/2,0) ); } );
-  Obs<Corr> Txy_epseps( "Txy_epseps", binsize, [](const Spin& s0){ return Corr( s0.Txy_epseps_corr(Lx/2,0) ); } );
+  // Obs<Corr> Txx_eps( "Txx_eps", binsize, [](const Spin& s0){ return Corr( s0.Txx_eps_corr() ); } );
+  // Obs<Corr> Txy_eps( "Txy_eps", binsize, [](const Spin& s0){ return Corr( s0.Txy_eps_corr() ); } );
+  Obs<Corr> Txx_ss( "Txx_ss", binsize, [x1,y1,x2,y2](const Spin& s0){ return Corr( s0.Txx_ss_corr(x1, y1, x2, y2) ); } );
+  Obs<Corr> Txy_ss( "Txy_ss", binsize, [x1,y1,x2,y2](const Spin& s0){ return Corr( s0.Txy_ss_corr(x1, y1, x2, y2) ); } );
+  Obs<Corr> Txx_epseps( "Txx_epseps", binsize, [x1,y1,x2,y2](const Spin& s0){ return Corr( s0.Txx_epseps_corr(x1, y1, x2, y2) ); } );
+  Obs<Corr> Txy_epseps( "Txy_epseps", binsize, [x1,y1,x2,y2](const Spin& s0){ return Corr( s0.Txy_epseps_corr(x1, y1, x2, y2) ); } );
   //----------------------------
 
 
@@ -128,8 +129,8 @@ int main( int argc, char *argv[] ){
     // //
     TxxTxx.meas( s );
     TxxTxy.meas( s );
-    Txx_eps.meas( s );
-    Txy_eps.meas( s );
+    // Txx_eps.meas( s );
+    // Txy_eps.meas( s );
     Txx_ss.meas( s );
     Txy_ss.meas( s );
     Txx_epseps.meas( s );
@@ -148,8 +149,8 @@ int main( int argc, char *argv[] ){
       //
       TxxTxx.write_and_clear( datadir, (n+1)/binsize );
       TxxTxy.write_and_clear( datadir, (n+1)/binsize );
-      Txx_eps.write_and_clear( datadir, (n+1)/binsize );
-      Txy_eps.write_and_clear( datadir, (n+1)/binsize );
+      // Txx_eps.write_and_clear( datadir, (n+1)/binsize );
+      // Txy_eps.write_and_clear( datadir, (n+1)/binsize );
       Txx_ss.write_and_clear( datadir, (n+1)/binsize );
       Txy_ss.write_and_clear( datadir, (n+1)/binsize );
       Txx_epseps.write_and_clear( datadir, (n+1)/binsize );
