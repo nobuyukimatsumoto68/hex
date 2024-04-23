@@ -26,7 +26,7 @@ constexpr int TWO = 2;
 constexpr int THREE = 3;
 constexpr int SIX = 6;
 
-int mult = 2;
+int mult = 6;
 Idx Lx = 3*2*mult; // 12
 Idx Ly = 3*1*mult;
 
