@@ -38,9 +38,9 @@ int main( int argc, char *argv[] ){
 
   // routine
   const int Nbin = 1e4;
-  const int binsize = 1e5; // 1e5
+  const int binsize = 1e5; // 1e4
 
-  const bool if_read = false;
+  const bool if_read = true;
   const bool if_write = true;
 
   const int Nheatbath = 4;
