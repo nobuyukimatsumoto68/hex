@@ -36,6 +36,7 @@ double tautil2 = 0.9396926207859083 + 0.00001;
 
 
 int mult = 24;
+// int mult = 4;
 Idx Lx = 3*1*mult; // 12
 Idx Ly = 3*1*mult;
 
@@ -45,7 +46,7 @@ constexpr int nparallel = 12; //12
 
 
 constexpr int nu = 1; // PP, PA, AA, AP
-const Double beta_c = 0.5 * std::log(2.0 + std::sqrt(3.0));
+// const Double beta_c = 0.5 * std::log(2.0 + std::sqrt(3.0));
 //
 // constexpr Double kappa = 2.0/3.0;
 // const Double cos6 = std::cos(M_PI/6.0);

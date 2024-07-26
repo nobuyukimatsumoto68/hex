@@ -83,7 +83,7 @@ int main( int argc, char *argv[] ){
     of << "Lx = " << Lx << std::endl
        << "Ly = " << Ly << std::endl
        << "nu = " << nu << std::endl
-       << "beta_c = " << beta_c << std::endl
+       // << "beta_c = " << beta_c << std::endl
        << "Nbin = " << Nbin << std::endl
        << "binsize = " << binsize << std::endl
        << "if_read= " << if_read << std::endl
@@ -198,7 +198,7 @@ int main( int argc, char *argv[] ){
 
     KA.meas( s );
     KB.meas( s );
-    KB.meas( s );
+    KC.meas( s );
 
     KAKA.meas( s );
     KAKB.meas( s );
