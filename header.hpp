@@ -26,10 +26,10 @@ constexpr int TWO = 2;
 constexpr int THREE = 3;
 constexpr int SIX = 6;
 
-const double abs_tautil = 1.2; // 1.0 <= abs
-const double arg_tautil = 4.0/9.0 * M_PI; // pi/3.0 <= arg <= pi/2.0 // 3.35
-// const double abs_tautil = 1.0; // 1.0 <= abs
-// const double arg_tautil = 3.0/9.0 * M_PI; // pi/3.0 <= arg <= pi/2.0 // 3.35
+// const double abs_tautil = 1.2; // 1.0 <= abs
+// const double arg_tautil = 4.0/9.0 * M_PI; // pi/3.0 <= arg <= pi/2.0 // 3.35
+const double abs_tautil = 1.0; // 1.0 <= abs
+const double arg_tautil = 3.0/9.0 * M_PI; // pi/3.0 <= arg <= pi/2.0 // 3.35
 const bool tautil_default = false; // true->below
 double tautil1 = 0.3420201433256688;
 double tautil2 = 0.9396926207859083 + 0.00001;
