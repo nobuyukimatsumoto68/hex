@@ -14,10 +14,9 @@ int main( int argc, char *argv[] ){
 
   if (argc>1){
     mult = atoi(argv[1]);
+    Lx = 3*mult; // 12
+    Ly = 3*mult;
   }
-  Lx = 3*mult; // 12
-  Ly = 3*mult;
-
 
   std::cout << std::scientific << std::setprecision(15);
   std::cout << "int = " << std::numeric_limits<int>::digits10 << std::endl;
@@ -39,7 +38,7 @@ int main( int argc, char *argv[] ){
 
   // routine
   const int Nbin = 1e4;
-  const int binsize = 1e2;
+  const int binsize = 1e3;
   // const int Nbin = 1e2;
   // const int binsize = 1e2;
 
@@ -49,7 +48,7 @@ int main( int argc, char *argv[] ){
   const int Nheatbath = 4;
   const int Nwolff = 10;
   // const int Nrepeat = 20;
-  const int Nrepeat = 1;
+  const int Nrepeat = 2;
 
   const unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
   // std::cout << seed << std::endl;
