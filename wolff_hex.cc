@@ -12,10 +12,16 @@
 
 int main( int argc, char *argv[] ){
 
+  int init_label = 0;
+  bool if_read = false;
   if (argc>1){
     mult = atoi(argv[1]);
     Lx = 3*mult; // 12
     Ly = 3*mult;
+  }
+  if (argc>2){
+    if_read=true;
+    init_label = atoi(argv[2]);
   }
 
   std::cout << std::scientific << std::setprecision(15);
@@ -37,18 +43,17 @@ int main( int argc, char *argv[] ){
   std::filesystem::create_directories( configdir );
 
   // routine
-  const int Nbin = 1e4;
+  const int Nbin = 1e3;
   const int binsize = 1e3;
   // const int Nbin = 1e2;
   // const int binsize = 1e2;
 
-  const bool if_read = false;
   const bool if_write = true;
 
   const int Nheatbath = 4;
   const int Nwolff = 10;
   // const int Nrepeat = 20;
-  const int Nrepeat = 2;
+  const int Nrepeat = 4;
 
   const unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
   // std::cout << seed << std::endl;
@@ -58,7 +63,6 @@ int main( int argc, char *argv[] ){
   set_gen( seed );
   Spin s( Lx*Ly );
 
-  int init_label = 0;
   if(if_read){
     std::filesystem::path dir{configdir};
     std::string file;
