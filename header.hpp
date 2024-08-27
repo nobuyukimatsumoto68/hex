@@ -26,10 +26,10 @@ constexpr int TWO = 2;
 constexpr int THREE = 3;
 constexpr int SIX = 6;
 
-// const double abs_tautil = 1.2; // 1.0 <= abs
-// const double arg_tautil = 4.0/9.0 * M_PI; // pi/3.0 <= arg <= pi/2.0 // 3.35
-const double abs_tautil = 1.0; // 1.0 <= abs
-const double arg_tautil = 3.0/9.0 * M_PI; // pi/3.0 <= arg <= pi/2.0 // 3.35
+const double abs_tautil = 1.2; // 1.0 <= abs
+const double arg_tautil = 4.0/9.0 * M_PI; // pi/3.0 <= arg <= pi/2.0 // 3.35
+// const double abs_tautil = 1.0; // 1.0 <= abs
+// const double arg_tautil = 3.0/9.0 * M_PI; // pi/3.0 <= arg <= pi/2.0 // 3.35
 const bool tautil_default = false; // true->below
 double tautil1 = 0.3420201433256688;
 double tautil2 = 0.9396926207859083 + 0.00001;
@@ -42,7 +42,7 @@ Idx Ly = 3*1*mult;
 
 // constexpr Idx Lx = 6*4; // 12
 // constexpr Idx Ly = 2*Lx;
-constexpr int nparallel = 4; //12
+constexpr int nparallel = 4; // 4; //12
 
 
 constexpr int nu = 1; // PP, PA, AA, AP
@@ -328,8 +328,8 @@ struct Spin {
 
     for(Idx x=0; x<Lx; x++){
       for(Idx y=0; y<Ly; y++){
-        // if( !is_site(x,y) ) continue;
-        if( (x-y+Lx*Ly)%3!=0 ) continue;
+        // if( !is_site(x,y) ) continue; // @@@
+        if( (x-y+Lx*Ly)%3!=0 ) continue; // @@@
         const Idx xp = (x+dx)%Lx;
         const Idx yp = (y+dy)%Ly;
         if( !is_site(xp,yp) ) continue;
@@ -451,7 +451,7 @@ struct Spin {
   }
 
 
-  Double K_1pt( const int mu ) const {
+  Double K_1pt( const int mu_ ) const {
     // std::vector<Double> tmp(nparallel, 0.0);
     // std::vector<int> counter(nparallel, 0);
     int counter = 0;
@@ -462,7 +462,14 @@ struct Spin {
     // #endif
     for(Idx x=0; x<Lx; x++){
       for(Idx y=0; y<Ly; y++){
-        if( !is_link(x,y,mu) ) continue;
+        // mod
+        // if( !is_link(x,y,mu) ) continue;
+        int mu=mu_;
+        const int c=get_char(x,y);
+        if(c==1) continue;
+        else if(c==2) mu+=3;
+        assert( is_link(x,y,mu) );
+
         res += K( x, y, mu );
         counter++;
         // tmp[omp_get_thread_num()] += K( x, y, mu );
@@ -480,7 +487,7 @@ struct Spin {
     return res;
   }
 
-  Double KK_corr( const Idx dx, const Idx dy, const int mu, const int nu ) const {
+  Double KK_corr( const Idx dx, const Idx dy, const int mu_, const int nu_ ) const {
     assert(0<=dx && dx<Lx);
     assert(0<=dy && dy<Ly);
 
@@ -489,13 +496,25 @@ struct Spin {
 
     for(Idx x=0; x<Lx; x++){
       for(Idx y=0; y<Ly; y++){
-        // if( !is_site(x,y) ) continue;
-        // if( (x-y+Lx*Ly)%3!=0 ) continue;
-        if( !is_link(x,y,mu) ) continue;
+        // mod
+        // if( !is_link(x,y,mu) ) continue;
+        int mu=mu_;
+        const int c=get_char(x,y);
+        if(c==1) continue;
+        else if(c==2) mu+=3;
+        assert( is_link(x,y,mu) );
+        //
+
         const Idx xp = (x+dx)%Lx;
         const Idx yp = (y+dy)%Ly;
-        if( !is_link(xp,yp,nu) ) continue;
-        // if( !is_site(xp,yp) ) continue;
+
+        // mod
+        // if( !is_link(xp,yp,nu) ) continue;
+        int nu=nu_;
+        const int cp=get_char(xp,yp);
+        if(cp==1) continue;
+        else if(cp==2) nu+=3;
+        assert( is_link(xp,yp,nu) );
 
         res += K(x,y,mu) * K(xp,yp,nu);
         counter++;
@@ -522,26 +541,66 @@ struct Spin {
   }
 
 
-  Double K_ss( const Idx dx1, const Idx dy1, const Idx dx2, const Idx dy2, const int mu ) const {
-    assert(0<=dx1 && dx1<Lx);
-    assert(0<=dy1 && dy1<Ly);
-    assert(0<=dx2 && dx2<Lx);
-    assert(0<=dy2 && dy2<Ly);
+  // Double K_ss( const Idx dx1, const Idx dy1, const Idx dx2, const Idx dy2, const int mu_ ) const {
+  Double K_ss( const Idx x0, const Idx y0,
+               const Idx x1, const Idx y1,
+               const Idx x2, const Idx y2,
+               const int mu_ ) const {
+    // assert(0<=dx1 && dx1<Lx);
+    // assert(0<=dy1 && dy1<Ly);
+    // assert(0<=dx2 && dx2<Lx);
+    // assert(0<=dy2 && dy2<Ly);
+    assert(0<=x0 && x0<Lx);
+    assert(0<=y0 && y0<Ly);
+    assert(0<=x1 && x1<Lx);
+    assert(0<=y1 && y1<Ly);
+    assert(0<=x2 && x2<Lx);
+    assert(0<=y2 && y2<Ly);
+
+    int mu=mu_;
+    const int c=get_char(x0,y0);
+    // if(c==1) continue;
+    if(c==2) mu+=3;
+    assert( is_link(x0,y0,mu) );
 
     Double res = 0.0;
     int counter = 0;
 
-    for(Idx x=0; x<Lx; x++){
-      for(Idx y=0; y<Ly; y++){
+    // for(Idx x=0; x<Lx; x++){
+    //   for(Idx y=0; y<Ly; y++){
+    for(Idx dx=0; dx<Lx; dx++){
+      for(Idx dy=0; dy<Ly; dy++){
         // if( !is_site(x,y) ) continue;
         // if( (x-y+Lx*Ly)%3!=0 ) continue;
-        if( !is_link(x,y,mu) ) continue;
-        const Idx x1 = (x+dx1)%Lx;
-        const Idx y1 = (y+dy1)%Ly;
-        const Idx x2 = (x+dx2)%Lx;
-        const Idx y2 = (y+dy2)%Ly;
-        if( !is_site(x1,y1) || !is_site(x2,y2) ) continue;
-        res += K(x,y,mu) * (*this)(x1,y1) * (*this)(x2,y2);
+
+        // mod
+        // if( !is_link(x,y,mu) ) continue;
+        // int mu=mu_;
+        // const int c=get_char(x,y);
+        // if(c==1) continue;
+        // else if(c==2) mu+=3;
+        // assert( is_link(x,y,mu) );
+
+        // const Idx x1 = (x+dx1)%Lx;
+        // const Idx y1 = (y+dy1)%Ly;
+        // const Idx x2 = (x+dx2)%Lx;
+        // const Idx y2 = (y+dy2)%Ly;
+        // if( !is_site(x1,y1) || !is_site(x2,y2) ) continue;
+        // res += K(x,y,mu) * (*this)(x1,y1) * (*this)(x2,y2);
+
+        const Idx x0p = (dx+x0)%Lx;
+        const Idx y0p = (dy+y0)%Ly;
+        const Idx x1p = (dx+x1)%Lx;
+        const Idx y1p = (dy+y1)%Ly;
+        const Idx x2p = (dx+x2)%Lx;
+        const Idx y2p = (dy+y2)%Ly;
+
+        // if( !is_link(x0p,y0p,mu_) ) continue;
+        if( !is_link(x0p,y0p,mu) ) continue;
+
+        if( !is_site(x0p,y0p) || !is_site(x1p,y1p) || !is_site(x2p,y2p) ) continue;
+        res += K(x0p,y0p,mu) * (*this)(x1p,y1p) * (*this)(x2p,y2p);
+
         counter++;
       }}
 
@@ -550,16 +609,22 @@ struct Spin {
   }
 
 
-  std::vector<Double> K_ss_corr( const Idx dx1, const Idx dy1, const int mu ) const {
+  //std::vector<Double> K_ss_corr( const Idx dx1, const Idx dy1, const int mu ) const {
+  std::vector<Double> K_ss_corr( const Idx x1, const Idx y1, const Idx x2, const Idx y2, const int mu ) const {
     std::vector<Double> corr(N, 0.0);
 
 #ifdef _OPENMP
 #pragma omp parallel for collapse(2) num_threads(nparallel)
     // #pragma omp parallel for num_threads(nparallel) schedule(static)
 #endif
-    for(Idx dx2=0; dx2<Lx; dx2++){
-      for(Idx dy2=0; dy2<Ly; dy2++){
-        corr[idx(dx2,dy2)] = K_ss( dx1, dy1, dx2, dy2, mu );
+    // for(Idx dx2=0; dx2<Lx; dx2++){
+    //   for(Idx dy2=0; dy2<Ly; dy2++){
+    // corr[idx(dx2,dy2)] = K_ss( dx1, dy1, dx2, dy2, mu );
+    for(Idx x0=0; x0<Lx; x0++){
+      for(Idx y0=0; y0<Ly; y0++){
+        const int c=get_char(x0,y0);
+        if(c==1) continue;
+        corr[idx(x0,y0)] = K_ss( x0, y0, x1, y1, x2, y2, mu );
       }}
     return corr;
   }
@@ -1098,6 +1163,19 @@ struct Corr {
     for(Idx i=0; i<Lx*Ly; i++) v[i] += rhs.v[i];
     return *this;
   }
+
+  Corr& operator*=(const double& a)
+  {
+    for(Idx i=0; i<Lx*Ly; i++) v[i] *= a;
+    return *this;
+  }
+
+  Corr& operator+=(const double& a)
+  {
+    for(Idx i=0; i<Lx*Ly; i++) v[i] += a;
+    return *this;
+  }
+
 
   Corr& operator+=(const std::vector<Double>& rhs)
   {

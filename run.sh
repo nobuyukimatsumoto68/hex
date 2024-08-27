@@ -7,7 +7,7 @@
 #$ -P qfe
 #$ -M nmatsum@bu.edu
 ##### run time limit. format: hh:mm:ss; default 12 hrs
-#$ -l h_rt=12:00:00
+#$ -l h_rt=24:00:00
 #$ -pe omp 4
 
 # --------- job info -----------#
@@ -33,5 +33,6 @@ pwd
 # echo ${mult} ${start}
 # ./wolff.o ${mult} ${start}
 echo ${mult}
-./wolff.o ${mult}
+# ./wolff.o ${mult}
+./${app} ${mult}
 echo "finished"

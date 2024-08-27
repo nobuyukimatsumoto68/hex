@@ -43,8 +43,10 @@ int main( int argc, char *argv[] ){
   std::filesystem::create_directories( configdir );
 
   // routine
-  const int Nbin = 1e3;
-  const int binsize = 1e3;
+  const int Nbin = 1e4;
+  const int binsize = 1e4;
+  // const int Nbin = 10;
+  // const int binsize = 1;
   // const int Nbin = 1e2;
   // const int binsize = 1e2;
 
@@ -167,22 +169,61 @@ int main( int argc, char *argv[] ){
   Obs<Scalar> KA( "KA", binsize, [](const Spin& s0){ return Scalar( s0.K_1pt(0) ); } );
   Obs<Scalar> KB( "KB", binsize, [](const Spin& s0){ return Scalar( s0.K_1pt(1) ); } );
   Obs<Scalar> KC( "KC", binsize, [](const Spin& s0){ return Scalar( s0.K_1pt(2) ); } );
+  // Obs<Scalar> KD( "KD", binsize, [](const Spin& s0){ return Scalar( s0.K_1pt(3) ); } );
+  // Obs<Scalar> KE( "KE", binsize, [](const Spin& s0){ return Scalar( s0.K_1pt(4) ); } );
+  // Obs<Scalar> KF( "KF", binsize, [](const Spin& s0){ return Scalar( s0.K_1pt(5) ); } );
 
   Obs<Corr> KAKA( "KAKA", binsize, [](const Spin& s0){ return Corr( s0.KK_corr(0,0) ); } );
   Obs<Corr> KAKB( "KAKB", binsize, [](const Spin& s0){ return Corr( s0.KK_corr(0,1) ); } );
   Obs<Corr> KAKC( "KAKC", binsize, [](const Spin& s0){ return Corr( s0.KK_corr(0,2) ); } );
+  // Obs<Corr> KAKD( "KAKD", binsize, [](const Spin& s0){ return Corr( s0.KK_corr(0,3) ); } );
+  // Obs<Corr> KAKE( "KAKE", binsize, [](const Spin& s0){ return Corr( s0.KK_corr(0,4) ); } );
+  // Obs<Corr> KAKF( "KAKF", binsize, [](const Spin& s0){ return Corr( s0.KK_corr(0,5) ); } );
   //
   Obs<Corr> KBKA( "KBKA", binsize, [](const Spin& s0){ return Corr( s0.KK_corr(1,0) ); } );
   Obs<Corr> KBKB( "KBKB", binsize, [](const Spin& s0){ return Corr( s0.KK_corr(1,1) ); } );
   Obs<Corr> KBKC( "KBKC", binsize, [](const Spin& s0){ return Corr( s0.KK_corr(1,2) ); } );
+  // Obs<Corr> KBKD( "KBKD", binsize, [](const Spin& s0){ return Corr( s0.KK_corr(1,3) ); } );
+  // Obs<Corr> KBKE( "KBKE", binsize, [](const Spin& s0){ return Corr( s0.KK_corr(1,4) ); } );
+  // Obs<Corr> KBKF( "KBKF", binsize, [](const Spin& s0){ return Corr( s0.KK_corr(1,5) ); } );
   //
   Obs<Corr> KCKA( "KCKA", binsize, [](const Spin& s0){ return Corr( s0.KK_corr(2,0) ); } );
   Obs<Corr> KCKB( "KCKB", binsize, [](const Spin& s0){ return Corr( s0.KK_corr(2,1) ); } );
   Obs<Corr> KCKC( "KCKC", binsize, [](const Spin& s0){ return Corr( s0.KK_corr(2,2) ); } );
+  // Obs<Corr> KCKD( "KCKD", binsize, [](const Spin& s0){ return Corr( s0.KK_corr(2,3) ); } );
+  // Obs<Corr> KCKE( "KCKE", binsize, [](const Spin& s0){ return Corr( s0.KK_corr(2,4) ); } );
+  // Obs<Corr> KCKF( "KCKF", binsize, [](const Spin& s0){ return Corr( s0.KK_corr(2,5) ); } );
+  //
+  // Obs<Corr> KDKA( "KDKA", binsize, [](const Spin& s0){ return Corr( s0.KK_corr(3,0) ); } );
+  // Obs<Corr> KDKB( "KDKB", binsize, [](const Spin& s0){ return Corr( s0.KK_corr(3,1) ); } );
+  // Obs<Corr> KDKC( "KDKC", binsize, [](const Spin& s0){ return Corr( s0.KK_corr(3,2) ); } );
+  // Obs<Corr> KDKD( "KDKD", binsize, [](const Spin& s0){ return Corr( s0.KK_corr(3,3) ); } );
+  // Obs<Corr> KDKE( "KDKE", binsize, [](const Spin& s0){ return Corr( s0.KK_corr(3,4) ); } );
+  // Obs<Corr> KDKF( "KDKF", binsize, [](const Spin& s0){ return Corr( s0.KK_corr(3,5) ); } );
+  // //
+  // Obs<Corr> KEKA( "KEKA", binsize, [](const Spin& s0){ return Corr( s0.KK_corr(4,0) ); } );
+  // Obs<Corr> KEKB( "KEKB", binsize, [](const Spin& s0){ return Corr( s0.KK_corr(4,1) ); } );
+  // Obs<Corr> KEKC( "KEKC", binsize, [](const Spin& s0){ return Corr( s0.KK_corr(4,2) ); } );
+  // Obs<Corr> KEKD( "KEKD", binsize, [](const Spin& s0){ return Corr( s0.KK_corr(4,3) ); } );
+  // Obs<Corr> KEKE( "KEKE", binsize, [](const Spin& s0){ return Corr( s0.KK_corr(4,4) ); } );
+  // Obs<Corr> KEKF( "KEKF", binsize, [](const Spin& s0){ return Corr( s0.KK_corr(4,5) ); } );
+  // //
+  // Obs<Corr> KFKA( "KFKA", binsize, [](const Spin& s0){ return Corr( s0.KK_corr(5,0) ); } );
+  // Obs<Corr> KFKB( "KFKB", binsize, [](const Spin& s0){ return Corr( s0.KK_corr(5,1) ); } );
+  // Obs<Corr> KFKC( "KFKC", binsize, [](const Spin& s0){ return Corr( s0.KK_corr(5,2) ); } );
+  // Obs<Corr> KFKD( "KFKD", binsize, [](const Spin& s0){ return Corr( s0.KK_corr(5,3) ); } );
+  // Obs<Corr> KFKE( "KFKE", binsize, [](const Spin& s0){ return Corr( s0.KK_corr(5,4) ); } );
+  // Obs<Corr> KFKF( "KFKF", binsize, [](const Spin& s0){ return Corr( s0.KK_corr(5,5) ); } );
 
-  Obs<Corr> KA_ss( "KA_ss", binsize, [](const Spin& s0){ return Corr( s0.K_ss_corr(Lx/2, 0.0, 0) ); } );
-  Obs<Corr> KB_ss( "KB_ss", binsize, [](const Spin& s0){ return Corr( s0.K_ss_corr(Lx/2, 0.0, 1) ); } );
-  Obs<Corr> KC_ss( "KC_ss", binsize, [](const Spin& s0){ return Corr( s0.K_ss_corr(Lx/2, 0.0, 2) ); } );
+  Obs<Corr> KA_ss( "KA_ss", binsize, [](const Spin& s0){ return Corr( s0.K_ss_corr(0.0, 0.0, Lx/2, 0.0, 0) ); } );
+  Obs<Corr> KB_ss( "KB_ss", binsize, [](const Spin& s0){ return Corr( s0.K_ss_corr(0.0, 0.0, Lx/2, 0.0, 1) ); } );
+  Obs<Corr> KC_ss( "KC_ss", binsize, [](const Spin& s0){ return Corr( s0.K_ss_corr(0.0, 0.0, Lx/2, 0.0, 2) ); } );
+  // Obs<Corr> KA_ss( "KA_ss", binsize, [](const Spin& s0){ return Corr( s0.K_ss_corr(Lx/2, 0.0, 0) ); } );
+  // Obs<Corr> KB_ss( "KB_ss", binsize, [](const Spin& s0){ return Corr( s0.K_ss_corr(Lx/2, 0.0, 1) ); } );
+  // Obs<Corr> KC_ss( "KC_ss", binsize, [](const Spin& s0){ return Corr( s0.K_ss_corr(Lx/2, 0.0, 2) ); } );
+  // Obs<Corr> KD_ss( "KD_ss", binsize, [](const Spin& s0){ return Corr( s0.K_ss_corr(Lx/2, 0.0, 3) ); } );
+  // Obs<Corr> KE_ss( "KE_ss", binsize, [](const Spin& s0){ return Corr( s0.K_ss_corr(Lx/2, 0.0, 4) ); } );
+  // Obs<Corr> KF_ss( "KF_ss", binsize, [](const Spin& s0){ return Corr( s0.K_ss_corr(Lx/2, 0.0, 5) ); } );
   //----------------------------
 
 
@@ -202,22 +243,58 @@ int main( int argc, char *argv[] ){
     KA.meas( s );
     KB.meas( s );
     KC.meas( s );
+    // KD.meas( s );
+    // KE.meas( s );
+    // KF.meas( s );
 
     KAKA.meas( s );
     KAKB.meas( s );
     KAKC.meas( s );
+    // KAKD.meas( s );
+    // KAKE.meas( s );
+    // KAKF.meas( s );
     //
     KBKA.meas( s );
     KBKB.meas( s );
     KBKC.meas( s );
+    // KBKD.meas( s );
+    // KBKE.meas( s );
+    // KBKF.meas( s );
     //
     KCKA.meas( s );
     KCKB.meas( s );
     KCKC.meas( s );
+    // KCKD.meas( s );
+    // KCKE.meas( s );
+    // KCKF.meas( s );
+    //
+    // KDKA.meas( s );
+    // KDKB.meas( s );
+    // KDKC.meas( s );
+    // KDKD.meas( s );
+    // KDKE.meas( s );
+    // KDKF.meas( s );
+    // //
+    // KEKA.meas( s );
+    // KEKB.meas( s );
+    // KEKC.meas( s );
+    // KEKD.meas( s );
+    // KEKE.meas( s );
+    // KEKF.meas( s );
+    // //
+    // KFKA.meas( s );
+    // KFKB.meas( s );
+    // KFKC.meas( s );
+    // KFKD.meas( s );
+    // KFKE.meas( s );
+    // KFKF.meas( s );
 
     KA_ss.meas( s );
     KB_ss.meas( s );
     KC_ss.meas( s );
+    // KD_ss.meas( s );
+    // KE_ss.meas( s );
+    // KF_ss.meas( s );
     //------
 
     // write out and clear
@@ -228,18 +305,51 @@ int main( int argc, char *argv[] ){
       KA.write_and_clear( datadir, (n+1)/binsize );
       KB.write_and_clear( datadir, (n+1)/binsize );
       KC.write_and_clear( datadir, (n+1)/binsize );
+      // KD.write_and_clear( datadir, (n+1)/binsize );
+      // KE.write_and_clear( datadir, (n+1)/binsize );
+      // KF.write_and_clear( datadir, (n+1)/binsize );
 
       KAKA.write_and_clear( datadir, (n+1)/binsize );
       KAKB.write_and_clear( datadir, (n+1)/binsize );
       KAKC.write_and_clear( datadir, (n+1)/binsize );
+      // KAKD.write_and_clear( datadir, (n+1)/binsize );
+      // KAKE.write_and_clear( datadir, (n+1)/binsize );
+      // KAKF.write_and_clear( datadir, (n+1)/binsize );
 
       KBKA.write_and_clear( datadir, (n+1)/binsize );
       KBKB.write_and_clear( datadir, (n+1)/binsize );
       KBKC.write_and_clear( datadir, (n+1)/binsize );
+      // KBKD.write_and_clear( datadir, (n+1)/binsize );
+      // KBKE.write_and_clear( datadir, (n+1)/binsize );
+      // KBKF.write_and_clear( datadir, (n+1)/binsize );
 
       KCKA.write_and_clear( datadir, (n+1)/binsize );
       KCKB.write_and_clear( datadir, (n+1)/binsize );
       KCKC.write_and_clear( datadir, (n+1)/binsize );
+      // KCKD.write_and_clear( datadir, (n+1)/binsize );
+      // KCKE.write_and_clear( datadir, (n+1)/binsize );
+      // KCKF.write_and_clear( datadir, (n+1)/binsize );
+
+      // KDKA.write_and_clear( datadir, (n+1)/binsize );
+      // KDKB.write_and_clear( datadir, (n+1)/binsize );
+      // KDKC.write_and_clear( datadir, (n+1)/binsize );
+      // KDKD.write_and_clear( datadir, (n+1)/binsize );
+      // KDKE.write_and_clear( datadir, (n+1)/binsize );
+      // KDKF.write_and_clear( datadir, (n+1)/binsize );
+
+      // KEKA.write_and_clear( datadir, (n+1)/binsize );
+      // KEKB.write_and_clear( datadir, (n+1)/binsize );
+      // KEKC.write_and_clear( datadir, (n+1)/binsize );
+      // KEKD.write_and_clear( datadir, (n+1)/binsize );
+      // KEKE.write_and_clear( datadir, (n+1)/binsize );
+      // KEKF.write_and_clear( datadir, (n+1)/binsize );
+
+      // KFKA.write_and_clear( datadir, (n+1)/binsize );
+      // KFKB.write_and_clear( datadir, (n+1)/binsize );
+      // KFKC.write_and_clear( datadir, (n+1)/binsize );
+      // KFKD.write_and_clear( datadir, (n+1)/binsize );
+      // KFKE.write_and_clear( datadir, (n+1)/binsize );
+      // KFKF.write_and_clear( datadir, (n+1)/binsize );
 
       KA_ss.write_and_clear( datadir, (n+1)/binsize );
       KB_ss.write_and_clear( datadir, (n+1)/binsize );

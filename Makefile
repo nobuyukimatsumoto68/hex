@@ -11,10 +11,15 @@ DIR = ./
 
 # # all: solve.o solve.o eps.o tt.o
 
-all: wolff.o
+# all: wolff.o
+# all: wolff2.o
 # all: tt.o eps.o t_vev.o psipsi.o eig.o
 
+# wolff.o: wolff_hex.cc header.hpp
 wolff.o: wolff_hex.cc header.hpp
+	$(CXX) $< $(INCLUDES) $(LDFLAGS) $(CXXFLAGS) -o $(DIR)$@
+
+wolff2.o: wolff_hex.cc header.hpp
 	$(CXX) $< $(INCLUDES) $(LDFLAGS) $(CXXFLAGS) -o $(DIR)$@
 
 test.o: wolff_hex.cc header.hpp
