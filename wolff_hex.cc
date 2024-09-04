@@ -15,7 +15,7 @@ int main( int argc, char *argv[] ){
   if (argc>1){
     mult = atoi(argv[1]);
   }
-  Lx = 3*2*mult; // 12
+  Lx = 3*1*mult; // 12
   Ly = 3*1*mult;
 
 
@@ -37,10 +37,12 @@ int main( int argc, char *argv[] ){
   std::filesystem::create_directories( configdir );
 
   // routine
-  const int Nbin = 1e4;
-  const int binsize = 1e5; // 1e4
+  // const int Nbin = 1e4;
+  // const int binsize = 1e4; // 1e4
+  const int Nbin = 10;
+  const int binsize = 1;
 
-  const bool if_read = true;
+  const bool if_read = false;
   const bool if_write = true;
 
   const int Nheatbath = 4;
@@ -93,7 +95,7 @@ int main( int argc, char *argv[] ){
 
   // observables
   //-----------
-  Idx x1 = 0, y1 = 0, x2 = Lx/2, y2 = Ly/2;
+  Idx x1 = 0, y1 = 0, x2 = Lx/2, y2 = 0;
   Obs<Corr> ss_corr( "ss_corr", binsize, [](const Spin& s0){ return Corr( s0.ss_corr() ); } );
   Obs<Scalar> eps_1pt( "eps_1pt", binsize, [](const Spin& s0){ return Scalar( s0.eps_1pt() ); } );
   Obs<Corr> epseps_corr( "epseps_corr", binsize, [](const Spin& s0){ return Corr( s0.epseps_corr() ); } );
@@ -103,6 +105,10 @@ int main( int argc, char *argv[] ){
   Obs<Corr> TxxTxy( "TxxTxy", binsize, [](const Spin& s0){ return Corr( s0.TxxTxy_corr() ); } );
   // Obs<Corr> Txx_eps( "Txx_eps", binsize, [](const Spin& s0){ return Corr( s0.Txx_eps_corr() ); } );
   // Obs<Corr> Txy_eps( "Txy_eps", binsize, [](const Spin& s0){ return Corr( s0.Txy_eps_corr() ); } );
+  Obs<Corr> eps_ss( "eps_ss", binsize, [x1,y1,x2,y2](const Spin& s0){ return Corr( s0.eps_ss_corr(x1, y1, x2, y2) ); } );
+  Obs<Corr> KA_ss( "KA_ss", binsize, [x1,y1,x2,y2](const Spin& s0){ return Corr( s0.K_ss_corr(0, x1, y1, x2, y2) ); } );
+  Obs<Corr> KB_ss( "KB_ss", binsize, [x1,y1,x2,y2](const Spin& s0){ return Corr( s0.K_ss_corr(1, x1, y1, x2, y2) ); } );
+  Obs<Corr> KC_ss( "KC_ss", binsize, [x1,y1,x2,y2](const Spin& s0){ return Corr( s0.K_ss_corr(2, x1, y1, x2, y2) ); } );
   Obs<Corr> Txx_ss( "Txx_ss", binsize, [x1,y1,x2,y2](const Spin& s0){ return Corr( s0.Txx_ss_corr(x1, y1, x2, y2) ); } );
   Obs<Corr> Txy_ss( "Txy_ss", binsize, [x1,y1,x2,y2](const Spin& s0){ return Corr( s0.Txy_ss_corr(x1, y1, x2, y2) ); } );
   Obs<Corr> Txx_epseps( "Txx_epseps", binsize, [x1,y1,x2,y2](const Spin& s0){ return Corr( s0.Txx_epseps_corr(x1, y1, x2, y2) ); } );
@@ -131,6 +137,10 @@ int main( int argc, char *argv[] ){
     TxxTxy.meas( s );
     // Txx_eps.meas( s );
     // Txy_eps.meas( s );
+    eps_ss.meas( s );
+    KA_ss.meas( s );
+    KB_ss.meas( s );
+    KC_ss.meas( s );
     Txx_ss.meas( s );
     Txy_ss.meas( s );
     Txx_epseps.meas( s );
@@ -151,6 +161,11 @@ int main( int argc, char *argv[] ){
       TxxTxy.write_and_clear( datadir, (n+1)/binsize );
       // Txx_eps.write_and_clear( datadir, (n+1)/binsize );
       // Txy_eps.write_and_clear( datadir, (n+1)/binsize );
+      eps_ss.write_and_clear( datadir, (n+1)/binsize );
+      KA_ss.write_and_clear( datadir, (n+1)/binsize );
+      KB_ss.write_and_clear( datadir, (n+1)/binsize );
+      KC_ss.write_and_clear( datadir, (n+1)/binsize );
+      //
       Txx_ss.write_and_clear( datadir, (n+1)/binsize );
       Txy_ss.write_and_clear( datadir, (n+1)/binsize );
       Txx_epseps.write_and_clear( datadir, (n+1)/binsize );
