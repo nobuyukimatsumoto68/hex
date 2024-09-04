@@ -24,7 +24,7 @@ echo "=========================================================="
 
 #-------------#
 
-module load gcc/12.2.0
+module load gcc/13.2.0
 
 #------- Program execution -------#
 
@@ -34,5 +34,5 @@ pwd
 # ./wolff.o ${mult} ${start}
 echo ${mult}
 # ./wolff.o ${mult}
-./${app} ${mult}
+./${app}
 echo "finished"
